@@ -6,10 +6,7 @@ use App\Http\Requests\Organizations\StoreOrganizationRequest;
 use App\Http\Requests\Organizations\UpdateOrganizationRequest;
 use App\Models\Organization;
 use App\Models\User;
-use App\Models\Vacancy;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use phpDocumentor\Reflection\Types\This;
 
 class OrganizationController extends Controller
 {

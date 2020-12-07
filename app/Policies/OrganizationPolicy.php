@@ -2,11 +2,9 @@
 
 namespace App\Policies;
 
-use App\Http\Requests\Organizations\StoreOrganizationRequest;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Support\Facades\Auth;
 
 class OrganizationPolicy
 {
@@ -18,6 +16,7 @@ class OrganizationPolicy
             return true;
         }
     }
+
     /**
      * Determine whether the user can view any models.
      *

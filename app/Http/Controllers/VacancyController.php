@@ -192,6 +192,7 @@ class VacancyController extends Controller
      */
     public function update(UpdateVacancyRequest $request, $id)
     {
+        dd('her');
         $vacancies = Vacancy::find($id);
         $vacancies->update($request->validated());
         return response()->json($vacancies);

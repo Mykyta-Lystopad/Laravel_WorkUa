@@ -80,7 +80,7 @@ class VacancyPolicy
      */
     public function update(User $user)
     {
-
+        dd('her');
 //        $organization = Organization::find($user->id);
 //        $vacancy = Vacancy::find($organization->user_id);
 //        dd($vacancy);
