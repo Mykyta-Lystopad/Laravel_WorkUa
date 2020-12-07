@@ -23,7 +23,9 @@ class VacancyFactory extends Factory
     {
         return [
             "name" => $this->faker->jobTitle,
-            "workers_need" => rand(5, 15),
+            "status" => true,
+            "workers_need" => rand(5, 11),
+            "booking" => 3,
             "salary" => rand(10000, 55000)
         ];
     }

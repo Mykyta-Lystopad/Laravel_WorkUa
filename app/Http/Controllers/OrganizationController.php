@@ -119,7 +119,6 @@ class OrganizationController extends Controller
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\Organization $organization
      * @return \Illuminate\Http\Response
-     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function update(UpdateOrganizationRequest $request, Organization $organization)
     {
@@ -127,9 +126,9 @@ class OrganizationController extends Controller
 
         return response()->json($organization);
     }
+
     /**
      * Remove the specified resource from storage.
-     *
      * @param Organization  $organization
      * @return \Illuminate\Http\Response
      */

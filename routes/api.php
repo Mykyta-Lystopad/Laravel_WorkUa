@@ -35,17 +35,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 // for organizations
     Route::apiResource('organization', OrganizationController::class);
-//Route::get('organization', [OrganizationController::class, 'index']);
-//Route::post('organization/{id}', [OrganizationController::class, 'store']);  //->middleware('can:create,organization');
-//Route::get('organization/{organization}', [OrganizationController::class, 'show']);
-//Route::put('organization/{organization}', [OrganizationController::class, 'update']);
-//Route::delete('organization/{organization}', [OrganizationController::class, 'destroy']); //->middleware('can:delete,organization');
 
 // for vacancies
     Route::apiResource('vacancies', VacancyController::class);
-//    Route::get('vacancies', [VacancyController::class, 'index']);
-//    Route::post('vacancies/{id}', [VacancyController::class, 'store']);
-//    Route::get('vacancies/{organization}', [VacancyController::class, 'show']);
+    Route::post('vacancy-book/{vacancies}', [VacancyController::class, 'book']);
+    Route::post('vacancy-unbook/{vacancies}', [VacancyController::class, 'unbook'])->name('unbook');
+//    Route::get('vacancies/{vacancies}', [VacancyController::class, 'index']);
+//    Route::get('vacancies/', [VacancyController::class, 'show']);
+//    Route::post('vacancies/{vacancies}', [VacancyController::class, 'store']);
 //    Route::put('vacancies/{vacancies}', [VacancyController::class, 'update']);
 //    Route::delete('vacancies/{vacancies}', [VacancyController::class, 'destroy']);
 
@@ -55,36 +52,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 
 });
-
-//// user
-//Route::get('user', [UserController::class, 'index']);
-//Route::get('user/{id}', [UserController::class, 'show']);
-//Route::put('user/{id}', [UserController::class, 'update']);
-//Route::delete('user/{id}', [UserController::class, 'destroy']);
-//
-//// for organizations
-//Route::apiResource('organization', OrganizationController::class);
-////Route::get('organization', [OrganizationController::class, 'index']);
-////Route::post('organization/{id}', [OrganizationController::class, 'store']);  //->middleware('can:create,organization');
-////Route::get('organization/{organization}', [OrganizationController::class, 'show']);
-////Route::put('organization/{organization}', [OrganizationController::class, 'update']);
-////Route::delete('organization/{organization}', [OrganizationController::class, 'destroy']); //->middleware('can:delete,organization');
-//
-//// for vacancies
-//Route::get('vacancies', [VacancyController::class, 'index']);
-//Route::post('vacancies/{id}', [VacancyController::class, 'store']);
-//Route::get('vacancies/{organization}', [VacancyController::class, 'show']);
-//Route::put('vacancies/{vacancies}', [VacancyController::class, 'update']);
-//Route::delete('vacancies/{vacancies}', [VacancyController::class, 'destroy']);
-//
-//// stats
-//Route::get('stats/organizations', [StatsController::class, 'organizations']);
-//Route::get('stats/users', [StatsController::class, 'users']);
-//
-
-
-
-
 
 
 

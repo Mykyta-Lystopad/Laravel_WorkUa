@@ -2,26 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Organizations\UpdateOrganizationRequest;
 use App\Http\Requests\Vacancies\StoreVacancyRequest;
 use App\Http\Requests\Vacancies\UpdateVacancyRequest;
 use App\Models\Organization;
-use App\Models\Organization_Vacancy;
 use App\Models\User;
 use App\Models\Vacancy;
+use App\Policies\VacancyPolicy;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
 
 class VacancyController extends Controller
 {
 
     public function __construct()
     {
-        $this->authorizeResource(Vacancy::class );
+        $this->authorizeResource( Vacancy::class );
     }
 
     /**
@@ -31,7 +29,9 @@ class VacancyController extends Controller
      */
     public function index()
     {
-        $vacancy = Vacancy::all();
+        /** @var  $vacancy */
+        $vacancy = Vacancy::with('users')->get();
+//        $vacancy->users;
         return response()->json($vacancy);
     }
 
@@ -62,18 +62,86 @@ class VacancyController extends Controller
      *
      * @param Request $request
      * @return Response
+     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function store(StoreVacancyRequest $request)
     {
         /** @var User  $user */
-            $user = auth()->user();
-            $vacancy = Vacancy::create($request->validated());
-            $organization = Organization::find($user->id);
-            $organization->vacancies()->save($vacancy);
+        $user = auth()->user();
+        $vacancy = Vacancy::create($request->validated());
+        $organization = Organization::find($user->id);
 
-            return response()->json($vacancy, 201);
+//        $this->unbook($request);
+
+        $organization->vacancies()->save($vacancy);
+        return response()->json($vacancy, 201);
      }
 
+    /**
+     * @param $id
+     * @return JsonResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    public function book($id)
+    {
+        /** @var  $vacancy */
+        $this->authorize('book', Vacancy::class);
+//        dd($request);
+        $vacancy = Vacancy::find($id);
+        $user = auth()->user();
+        $vacancy_user_id = $vacancy->users->find($user->id);
+
+        if ($vacancy_user_id === null && $vacancy->workers_need > 0)
+        {
+            $vacancy->workers_need -= 1;
+            $vacancy->booking += 1;
+
+            $vacancy->update();
+            $user->vacancies()->attach($vacancy);
+            return response()->json(['message' => 'Booking success'], 200 );
+        }
+        elseif ($vacancy_user_id === null || $vacancy->workers_need === 0)
+        {
+            $vacancy->status = false;
+            $vacancy->update();
+            return response()->json(['message' => 'Vacancy - closed'], 200 );
+        }
+        elseif ($vacancy_user_id->id === $user->id)
+        {
+            return response()->json(['message' => 'This user booked already'], 200 );
+        }
+
+    }
+
+    /**
+     * @param $id
+     * @return JsonResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    public function unbook($id)
+    {
+        $this->authorize('unbook', Vacancy::class);
+
+        $vacancy = Vacancy::find($id);
+        $user = auth()->user();
+        $vacancy_user_id = $vacancy->users->find($user->id);
+        if ($vacancy_user_id === null)
+        {
+            return response()->json(['message'=>'User '. $user->first_name .' was not booked'] );
+        }
+        else
+        {
+            $vacancy->workers_need += 1;
+            $vacancy->booking -= 1;
+            if ($vacancy->status === false)
+            {
+                $vacancy->status = true;
+            }
+            $vacancy->update();
+            $user->vacancies()->detach($vacancy);
+            return response()->json(['message'=>'User '. $user->first_name .' was unbooked successfully']);
+        }
+    }
 
     /**
      * @param StoreVacancyRequest $request
@@ -82,7 +150,6 @@ class VacancyController extends Controller
      */
     public function storeWeb(StoreVacancyRequest $request, $id)
     {
-//        dd($request, $id);
         $vacancy = Vacancy::create($request->validated());
         $organization = Organization::find($id);
         $organization->vacancies()->save($vacancy);
@@ -104,6 +171,7 @@ class VacancyController extends Controller
         }
         return view('organization.vacancy.showWeb', compact('vacancies'));
     }
+
     /**
      * Show the form for editing the specified resource.
      *
@@ -120,27 +188,27 @@ class VacancyController extends Controller
      *
      * @param UpdateVacancyRequest $request
      * @param Vacancy $vacancies
-     * @return Response
-     *
+     * @return \Illuminate\Http\Response
      */
-    public function update(UpdateVacancyRequest $request, Vacancy $vacancies)
+    public function update(UpdateVacancyRequest $request, $id)
     {
-            $vacancies->update($request->validated());
-            return response()->json($vacancies);
+        $vacancies = Vacancy::find($id);
+        $vacancies->update($request->validated());
+        return response()->json($vacancies);
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
+     * Remove the specified resource from storage
      * @param Vacancy $vacancies
      * @return Response
      */
-    public function destroy(Vacancy $vacancies)
+    public function destroy($id)
     {
+        $vacancies = Vacancy::find($id);
         $vacancies->delete();
-
-        return response()->json(['message'=> 'object '. $vacancies->id . ' deleted'], 204);
+        return response()->json(['message'=> 'object '. $id . ' deleted'], 204);
     }
+
     /**
      * @param $id
      * @return Factory|View

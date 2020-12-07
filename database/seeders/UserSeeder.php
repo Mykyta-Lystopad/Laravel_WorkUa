@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Vacancy;
 use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder
@@ -21,8 +22,17 @@ class UserSeeder extends Seeder
         User::factory()->count(5)->create([
             'role' => 'employer'
         ]);
-        User::factory()->count(5)->create([
+        User::factory()->count(35)->create([
             'role' => 'worker'
         ]);
+
+//        Vacancy::all()->each(function (Vacancy $vacancy) {
+//            $user = User::all()->random(3);
+//            $vacancy->users()->attach($user);
+//        });
     }
+
+
+
+
 }

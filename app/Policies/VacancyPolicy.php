@@ -32,8 +32,8 @@ class VacancyPolicy
     /**
      * Determine whether the user can view the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Vacancy  $vacancy
+     * @param  User  $user
+     * @param  Vacancy  $vacancy
      * @return mixed
      */
     public function view(User $user, Vacancy $vacancy)
@@ -44,7 +44,7 @@ class VacancyPolicy
     /**
      * Determine whether the user can create models.
      *
-     * @param  \App\Models\User  $user
+     * @param  User  $user
      * @return mixed
      */
     public function create(User $user)
@@ -57,26 +57,44 @@ class VacancyPolicy
     }
 
     /**
+     * @return bool
+     */
+    public function book()
+    {
+        return true;
+    }
+
+    /**
+     * @return bool
+     */
+    public function unbook()
+    {
+        return true;
+    }
+    /**
      * Determine whether the user can update the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Vacancy  $vacancy
+     * @param  User  $user
+     * @param  Vacancy  $vacancy
      * @return mixed
      */
-    public function update(User $user, Vacancy $vacancy)
+    public function update(User $user)
     {
-        $organization = Organization::find($vacancy->organization_id);
-        if ($user->role === 'employer' && $organization->user_id === $user->id){
-            return true;
-        }
-        return false;
+
+//        $organization = Organization::find($user->id);
+//        $vacancy = Vacancy::find($organization->user_id);
+//        dd($vacancy);
+//        if ($user->role === 'employer' && $vacancy->organization_id == $user->id){
+//            return true;
+//        }
+        return true;
     }
 
     /**
      * Determine whether the user can delete the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Vacancy  $vacancy
+     * @param  User  $user
+     * @param  Vacancy  $vacancy
      * @return mixed
      */
     public function delete(User $user, Vacancy $vacancy)

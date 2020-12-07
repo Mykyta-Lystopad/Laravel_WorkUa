@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Organization;
+use App\Models\User;
 use App\Models\Vacancy;
 use Illuminate\Database\Seeder;
 
@@ -23,8 +24,13 @@ class VacancySeeder extends Seeder
 
         Organization::all()->each(function (Organization $organization) {
             $vacancy = Vacancy::factory(4)->make();
-
             $organization->vacancies()->saveMany($vacancy);
+
+        });
+
+        User::all()->each(function (User $user) {
+           $vacancy = Vacancy::all()->random(2);
+           $user->vacancies()->attach($vacancy);
         });
     }
 

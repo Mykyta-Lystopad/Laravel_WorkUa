@@ -59,8 +59,8 @@ class OrganizationPolicy
     /**
      * Determine whether the user can update the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Organization  $organization
+     * @param  User  $user
+     * @param  Organization  $organization
      * @return mixed
      */
     public function update(User $user, Organization $organization)

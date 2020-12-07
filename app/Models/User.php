@@ -47,6 +47,9 @@ class User extends Authenticatable
         return $this->hasMany(Organization::class);
     }
 
+    public function Vacancies() {
+        return $this->belongsToMany(Vacancy::class);
+    }
     /**
      * @param $value
      * @return string
