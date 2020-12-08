@@ -9,6 +9,10 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * Class User
+ * @package App\Models
+ */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
@@ -48,9 +52,13 @@ class User extends Authenticatable
         return $this->hasMany(Organization::class);
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
     public function Vacancies() {
         return $this->belongsToMany(Vacancy::class);
     }
+
     /**
      * @param $value
      * @return string

@@ -13,18 +13,23 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
+/**
+ * Class VacancyController
+ * @package App\Http\Controllers
+ */
 class VacancyController extends Controller
 {
 
+    /**
+     * VacancyController constructor.
+     */
     public function __construct()
     {
         $this->authorizeResource(  Vacancy::class, 'vacancy' );
     }
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return Response
+     * @return JsonResponse
      */
     public function index()
     {
@@ -34,10 +39,8 @@ class VacancyController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param Vacancy $vacancies
-     * @return Response
+     * @param Vacancy $vacancy
+     * @return JsonResponse
      */
     public function show(Vacancy $vacancy)
     {
@@ -45,32 +48,14 @@ class VacancyController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return Response
-     */
-    public function createWeb(Organization $organization)
-    {
-        $org = $organization;
-        return view('organization.vacancy.createWeb', compact('org'));
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param Request $request
-     * @return Response
-     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @param StoreVacancyRequest $request
+     * @return JsonResponse
      */
     public function store(StoreVacancyRequest $request)
     {
-        /** @var User  $user */
         $user = auth()->user();
         $vacancy = Vacancy::create($request->validated());
         $organization = Organization::find($user->id);
-
-//        $this->unbook($request);
-
         $organization->vacancies()->save($vacancy);
         return response()->json($vacancy, 201);
      }
@@ -82,9 +67,7 @@ class VacancyController extends Controller
      */
     public function book($id)
     {
-        /** @var  $vacancy */
         $this->authorize('book', Vacancy::class);
-//        dd($request);
         $vacancy = Vacancy::find($id);
         $user = auth()->user();
         $vacancy_user_id = $vacancy->users->find($user->id);
@@ -152,46 +135,6 @@ class VacancyController extends Controller
     }
 
     /**
-     * @param StoreVacancyRequest $request
-     * @param $id
-     * @return JsonResponse
-     */
-    public function storeWeb(StoreVacancyRequest $request, $id)
-    {
-        $vacancy = Vacancy::create($request->validated());
-        $organization = Organization::find($id);
-        $organization->vacancies()->save($vacancy);
-
-        return redirect()->route('organization.indexWeb')->with('success', 'Вакансію створено');
-    }
-
-    /**
-     * @param Organization $organization
-     * @return JsonResponse
-     */
-    public function showWeb(Organization $organization)
-    {
-
-        $vacancies = $organization->vacancies;
-
-        if (!$vacancies) {
-            return redirect()->route('organization.indexWeb')->withErrors('Такої вакансії не існує');
-        }
-        return view('organization.vacancy.showWeb', compact('vacancies'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param Vacancy $vacancies
-     * @return Response
-     */
-    public function edit(Vacancy $vacancies)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param UpdateVacancyRequest $request
@@ -201,7 +144,6 @@ class VacancyController extends Controller
      */
     public function update(UpdateVacancyRequest $request, Vacancy $vacancy)
     {
-//        $this->authorize('update', $vacancy);
         $vacancies = Vacancy::find($vacancy->id);
         $vacancies->update($request->validated());
         return response()->json($vacancies);
@@ -217,15 +159,4 @@ class VacancyController extends Controller
         $vacancy->delete();
         return response()->json(['message'=> 'Object was deleted'], 204);
     }
-
-    /**
-     * @param $id
-     * @return Factory|View
-     */
-//    public function destroyWeb($id){
-//        $vacancy = Vacancy::find($id);
-//        $vacancy->delete();
-//
-//        return redirect()->route('organization.indexWeb')->with('success', 'Вакансію видалено');
-//    }
 }

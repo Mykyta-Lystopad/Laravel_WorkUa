@@ -7,7 +7,6 @@ use App\Http\Requests\RegisterRequestRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Dotenv\Exception\ValidationException;
-use Illuminate\Http\JsonResponse;
 use Mockery\Exception;
 
 /**
@@ -28,7 +27,6 @@ class AuthController extends Controller
         $data = UserResource::make($user)->toArray($request) +
             ['access_token'=>$user->createToken('api')->plainTextToken];
         return $this->created($data);
-//        return response()->json($data, 201);
     }
 
     /**

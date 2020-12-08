@@ -19,10 +19,8 @@ class VacancyPolicy
     }
 
     /**
-     * Determine whether the user can view any models.
-     *
-     * @param  \App\Models\User  $user
-     * @return mixed
+     * @param User $user
+     * @return bool
      */
     public function viewAny(User $user)
     {
@@ -30,11 +28,9 @@ class VacancyPolicy
     }
 
     /**
-     * Determine whether the user can view the model.
-     *
-     * @param  User  $user
-     * @param  Vacancy  $vacancy
-     * @return mixed
+     * @param User $user
+     * @param Vacancy $vacancy
+     * @return bool
      */
     public function view(User $user, Vacancy $vacancy)
     {
@@ -42,14 +38,11 @@ class VacancyPolicy
     }
 
     /**
-     * Determine whether the user can create models.
-     *
-     * @param  User  $user
-     * @return mixed
+     * @param User $user
+     * @return bool
      */
     public function create(User $user)
     {
-        /** @var  $user */
         if ($user->role == 'employer'){
             return true;
         }
@@ -87,11 +80,9 @@ class VacancyPolicy
     }
 
     /**
-     * Determine whether the user can delete the model.
-     *
-     * @param  User  $user
-     * @param  Vacancy  $vacancy
-     * @return mixed
+     * @param User $user
+     * @param Vacancy $vacancy
+     * @return bool
      */
     public function delete(User $user, Vacancy $vacancy)
     {
@@ -104,11 +95,8 @@ class VacancyPolicy
     }
 
     /**
-     * Determine whether the user can restore the model.
-     *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Vacancy  $vacancy
-     * @return mixed
+     * @param User $user
+     * @param Vacancy $vacancy
      */
     public function restore(User $user, Vacancy $vacancy)
     {
@@ -116,11 +104,8 @@ class VacancyPolicy
     }
 
     /**
-     * Determine whether the user can permanently delete the model.
-     *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Vacancy  $vacancy
-     * @return mixed
+     * @param User $user
+     * @param Vacancy $vacancy
      */
     public function forceDelete(User $user, Vacancy $vacancy)
     {
