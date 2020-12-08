@@ -40,28 +40,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::apiResource('vacancies', VacancyController::class);
     Route::post('vacancy-book/{vacancies}', [VacancyController::class, 'book']);
     Route::post('vacancy-unbook/{vacancies},{user}', [VacancyController::class, 'unbook']);
-//    Route::get('vacancies/{vacancies}', [VacancyController::class, 'index']);
-//    Route::get('vacancies/', [VacancyController::class, 'show']);
-//    Route::post('vacancies/{vacancies}', [VacancyController::class, 'store']);
-//    Route::put('vacancies/{vacancies}', [VacancyController::class, 'update']);
-//    Route::delete('vacancies/{vacancies}', [VacancyController::class, 'destroy']);
 
 // stats
     Route::get('stats/organizations', [StatsController::class, 'organizations']);
     Route::get('stats/users', [StatsController::class, 'users']);
     Route::get('stats/vacancies', [StatsController::class, 'vacancies']);
 });
-
-
-
-//Route::get('cashboxes', [CashBoxController::class, 'index']);
-//Route::post('cashboxes', [CashBoxController::class, 'store']);
-//Route::get('cashboxes/{cashbox}', [CashBoxController::class, 'show']);
-//Route::put('cashboxes/{cashbox}', [CashBoxController::class, 'update']);
-//Route::delete('cashboxes/{cashbox}', [CashBoxController::class, 'destroy']);
-
-// or
-
-//Route::apiResource('cashboxes', CashBoxController::class);
-//Route::apiResource('cashboxes', CashBoxController::class)->except('store');
-//Route::apiResource('cashboxes', CashBoxController::class)->only('index');
