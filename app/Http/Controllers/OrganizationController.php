@@ -6,6 +6,7 @@ use App\Http\Requests\Organizations\StoreOrganizationRequest;
 use App\Http\Requests\Organizations\UpdateOrganizationRequest;
 use App\Models\Organization;
 use App\Models\User;
+use App\Models\Vacancy;
 use Illuminate\Http\Request;
 
 class OrganizationController extends Controller
@@ -125,15 +126,16 @@ class OrganizationController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     * @param Organization  $organization
-     * @return \Illuminate\Http\Response
+     * @param Organization $organization
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function destroy(Organization $organization)
     {
-            $organization->delete();
+        $vacancies = Vacancy::where('organization_id', $organization->id)->delete();
+        $organization->delete();
 
-            return response()->json(['message' => 'object ' . $organization->id . ' deleted']);
+        return response()->json(['message' => 'Organization deleted']);
     }
 
 //    /**

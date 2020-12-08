@@ -39,7 +39,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 // for vacancies
     Route::apiResource('vacancies', VacancyController::class);
     Route::post('vacancy-book/{vacancies}', [VacancyController::class, 'book']);
-    Route::post('vacancy-unbook/{vacancies}', [VacancyController::class, 'unbook']);
+    Route::post('vacancy-unbook/{vacancies},{user}', [VacancyController::class, 'unbook']);
 //    Route::get('vacancies/{vacancies}', [VacancyController::class, 'index']);
 //    Route::get('vacancies/', [VacancyController::class, 'show']);
 //    Route::post('vacancies/{vacancies}', [VacancyController::class, 'store']);

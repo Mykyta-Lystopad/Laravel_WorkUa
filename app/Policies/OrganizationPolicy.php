@@ -80,11 +80,12 @@ class OrganizationPolicy
     public function delete(User $user, Organization $organization)
     {
         /** @var  $user */
-        if ($user->role === 'employer' && $organization->user_id === $user->id ){
-            return true;
+//        dd($user->role);
+//        dd($organization->user_id, $user->id);
+        if ( !($user->role === 'employer' && ($organization->user_id === $user->id)) ){
+            return false;
         }
-        return response()->json(['message'=>'object ' . $organization->id . ' deleted']);
-
+        return response()->json(['message'=>'You can not delete this organization']);
     }
 
     /**

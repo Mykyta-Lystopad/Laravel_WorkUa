@@ -32,6 +32,9 @@ class CreateOrganizationsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('organizations');
+//        Schema::dropIfExists('organizations');
+        Schema::table('organizations', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
     }
 }

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterRequestRequest;
+use App\Models\Organization;
 use App\Models\User;
+use App\Models\Vacancy;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -96,9 +98,11 @@ class UserController extends Controller
     {
         $user = User::find($id);
         if ($user->role == 'admin' || $user->id == $id) {
+            $vacancies = Vacancy::where('organization_id', $user->id)->delete();
+            $organization = Organization::where('user_id', $user->id)->delete();
             $user->delete();
 
-            return response()->json(['message'=>'user with '. $id .' id - deleted']);
+            return response()->json(['message'=>'user with '. $id .' id - SoftDeleted']);
         }
         return response()->json(['message'=>'error']);
     }

@@ -118,19 +118,27 @@ class VacancyController extends Controller
      * @return JsonResponse
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function unbook($id)
+    public function unbook($user_id, $vacancy_id)
     {
         $this->authorize('unbook', Vacancy::class);
 
-        $vacancy = Vacancy::find($id);
-        $user = auth()->user();
-        $vacancy_user_id = $vacancy->users->find($user->id);
+        $auth_user = auth()->user();
+
+        $vacancy = Vacancy::find($vacancy_id);
+        $organization_belong = Organization::find($vacancy->organization_id)->user_id;
+        $user = User::find($user_id);
+        $vacancy_user_id = $vacancy->users->find($user_id);
+
         if ($vacancy_user_id === null)
         {
-            return response()->json(['message'=>'User '. $user->first_name .' was not booked'] );
+            return response()->json(['message'=>'User was not booked'] );
         }
-        else
+
+        elseif ( ($auth_user->role === 'admin')
+            || ($auth_user->id === $organization_belong)
+            || ($auth_user->id === $vacancy_user_id->id) )
         {
+
             $vacancy->workers_need += 1;
             $vacancy->booking -= 1;
             if ($vacancy->status === false)
@@ -141,6 +149,8 @@ class VacancyController extends Controller
             $user->vacancies()->detach($vacancy);
             return response()->json(['message'=>'User '. $user->first_name .' was unbooked successfully']);
         }
+
+        return response()->json(['message'=>'You can not unbook this user']);
     }
 
     /**
