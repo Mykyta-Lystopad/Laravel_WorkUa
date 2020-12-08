@@ -7,7 +7,6 @@ use App\Http\Requests\Vacancies\UpdateVacancyRequest;
 use App\Models\Organization;
 use App\Models\User;
 use App\Models\Vacancy;
-use App\Policies\VacancyPolicy;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -19,7 +18,7 @@ class VacancyController extends Controller
 
     public function __construct()
     {
-        $this->authorizeResource( Vacancy::class );
+        $this->authorizeResource(  Vacancy::class, 'vacancy' );
     }
 
     /**
@@ -31,7 +30,6 @@ class VacancyController extends Controller
     {
         /** @var  $vacancy */
         $vacancy = Vacancy::with('users')->get();
-//        $vacancy->users;
         return response()->json($vacancy);
     }
 
@@ -199,35 +197,35 @@ class VacancyController extends Controller
      * @param UpdateVacancyRequest $request
      * @param Vacancy $vacancies
      * @return \Illuminate\Http\Response
+     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function update(UpdateVacancyRequest $request, $id)
+    public function update(UpdateVacancyRequest $request, Vacancy $vacancy)
     {
-        dd('her');
-        $vacancies = Vacancy::find($id);
+//        $this->authorize('update', $vacancy);
+        $vacancies = Vacancy::find($vacancy->id);
         $vacancies->update($request->validated());
         return response()->json($vacancies);
     }
 
     /**
-     * Remove the specified resource from storage
-     * @param Vacancy $vacancies
-     * @return Response
+     * @param Vacancy $vacancy
+     * @return JsonResponse
+     * @throws \Exception
      */
-    public function destroy($id)
+    public function destroy(Vacancy $vacancy)
     {
-        $vacancies = Vacancy::find($id);
-        $vacancies->delete();
-        return response()->json(['message'=> 'object '. $id . ' deleted'], 204);
+        $vacancy->delete();
+        return response()->json(['message'=> 'Object was deleted'], 204);
     }
 
     /**
      * @param $id
      * @return Factory|View
      */
-    public function destroyWeb($id){
-        $vacancy = Vacancy::find($id);
-        $vacancy->delete();
-
-        return redirect()->route('organization.indexWeb')->with('success', 'Вакансію видалено');
-    }
+//    public function destroyWeb($id){
+//        $vacancy = Vacancy::find($id);
+//        $vacancy->delete();
+//
+//        return redirect()->route('organization.indexWeb')->with('success', 'Вакансію видалено');
+//    }
 }

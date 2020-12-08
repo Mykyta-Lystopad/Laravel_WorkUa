@@ -71,23 +71,19 @@ class VacancyPolicy
     {
         return true;
     }
+
     /**
-     * Determine whether the user can update the model.
-     *
-     * @param  User  $user
-     * @param  Vacancy  $vacancy
-     * @return mixed
+     * @param User $user
+     * @param Vacancy $vacancy
+     * @return bool
      */
-    public function update(User $user)
+    public function update(User $user, Vacancy $vacancy)
     {
-        dd('her');
-//        $organization = Organization::find($user->id);
-//        $vacancy = Vacancy::find($organization->user_id);
-//        dd($vacancy);
-//        if ($user->role === 'employer' && $vacancy->organization_id == $user->id){
-//            return true;
-//        }
-        return true;
+        $vacancy = Organization::find($vacancy->organization_id)->user_id;
+        if ($user->role === 'employer' && $vacancy == $user->id){
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -100,12 +96,11 @@ class VacancyPolicy
     public function delete(User $user, Vacancy $vacancy)
     {
         /** @var  $user */
-        $organization = Organization::find($vacancy->organization_id);
-        if ($user->role === 'employer' && $organization->user_id === $user->id ){
+
+        $vacancy = Organization::find($vacancy->organization_id)->user_id;
+        if ( ($user->role === 'employer') && ($vacancy === $user->id) ){
             return true;
         }
-        return response()->json(['message'=>'object ' . $organization->id . ' deleted']);
-
     }
 
     /**
