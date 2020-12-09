@@ -14,6 +14,15 @@ use Illuminate\Http\Request;
  */
 class UserController extends Controller
 {
+//    /**
+//     * UserController constructor.
+//     * @throws \Illuminate\Auth\Access\AuthorizationException
+//     */
+//    public function __construct()
+//    {
+//        $this->authorizeResource(User::class, 'user');
+//    }
+
     /**
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -45,9 +54,11 @@ class UserController extends Controller
      * @param RegisterRequestRequest $request
      * @param $id
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function update(RegisterRequestRequest $request, $id)
     {
+        $this->authorize('update', [User::class, $id]);
         $user = User::find($id);
         $user->update($request->validated());
 
@@ -61,6 +72,8 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
+        $this->authorize('delete', [User::class, $id ]);
+
         $user = User::find($id);
         if ($user->role == 'admin' || $user->id == $id) {
             $vacancies = Vacancy::where('organization_id', $user->id)->delete();

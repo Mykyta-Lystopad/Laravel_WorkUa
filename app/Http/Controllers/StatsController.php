@@ -17,15 +17,17 @@ class StatsController extends Controller
     {
         $this->authorize('users', StatsController::class);
         /** @var  $user */
-        $user = User::count();
+        $user = User::withTrashed()->count();
         $userAdm = User::where('role', 'admin')->count();
         $userWorker = User::where('role',  'worker')->count();
         $userEmployer = User::where('role', 'employer')->count();
+        $userDel = User::onlyTrashed()->count();
         $data = [
-            "admin"=> $userAdm,
-            "employer"=> $userEmployer,
-            "worker"=> $userWorker,
-            "all"=> $user
+            "Admin"=> $userAdm,
+            "Employer"=> $userEmployer,
+            "Worker"=> $userWorker,
+            "Soft-Deleted"=> $userDel,
+            "All"=> $user
         ];
 
         return response()->json(['Statistics of users'=> $data]);
@@ -39,12 +41,14 @@ class StatsController extends Controller
     {
         $this->authorize('vacancies', StatsController::class);
 
-        $vacancies_all = Vacancy::count();
+        $vacancies_all = Vacancy::withTrashed()->count();
         $vacancies_active = Vacancy::withTrashed()->where('status', 1)->count();
         $vacancies_closed = Vacancy::withTrashed()->where('status', 0)->count();
+        $vacancies_del = Vacancy::onlyTrashed()->count();
         $data = [
           'Active'=> $vacancies_active,
           'Closed'=> $vacancies_closed,
+          'Soft-Deleted'=> $vacancies_del,
           'All'=> $vacancies_all
         ];
 
@@ -58,12 +62,12 @@ class StatsController extends Controller
     {
         $this->authorize('organizations', StatsController::class);
 
-        $organizationsActive = Organization::count();
+        $organizationsActive = Organization::withTrashed()->count();
         $organizationsDel = Organization::onlyTrashed()->count();
         $organizationsAll = Organization::withTrashed()->count();
         $data = [
             "Active"=> $organizationsActive,
-            "Deleted"=> $organizationsDel,
+            "Soft-Deleted"=> $organizationsDel,
             "All"=> $organizationsAll
         ];
 
