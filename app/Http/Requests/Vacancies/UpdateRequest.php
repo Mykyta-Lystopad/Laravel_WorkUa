@@ -8,7 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
  * Class UpdateVacancyRequest
  * @package App\Http\Requests\Vacancies
  */
-class UpdateVacancyRequest extends FormRequest
+class UpdateRequest extends FormRequest
 {
 
     /**

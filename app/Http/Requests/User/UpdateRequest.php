@@ -1,16 +1,14 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\User;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-/**
- * Class RegisterRequestRequest
- * @package App\Http\Requests
- */
-class RegisterRequestRequest extends FormRequest
+class UpdateRequest extends FormRequest
 {
     /**
+     * Get the validation rules that apply to the request.
+     *
      * @return array
      */
     public function rules()
@@ -22,8 +20,7 @@ class RegisterRequestRequest extends FormRequest
             'password'=>'string|min:6|max:20|required',
             'country'=>['string', 'min:2', 'max:20', 'required'],
             'city'=>'string|min:2|max:50|required',
-            'telephone'=>'numeric|required',
-            'role'=>'string|required',
+            'telephone'=>'numeric|required'
         ];
     }
 }

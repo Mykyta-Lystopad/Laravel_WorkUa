@@ -2,16 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Vacancies\StoreVacancyRequest;
-use App\Http\Requests\Vacancies\UpdateVacancyRequest;
+use App\Http\Requests\Vacancies\StoreRequest;
+use App\Http\Requests\Vacancies\UpdateRequest;
 use App\Models\Organization;
 use App\Models\User;
 use App\Models\Vacancy;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 
 /**
  * Class VacancyController
@@ -48,10 +44,10 @@ class VacancyController extends Controller
     }
 
     /**
-     * @param StoreVacancyRequest $request
+     * @param StoreRequest $request
      * @return JsonResponse
      */
-    public function store(StoreVacancyRequest $request)
+    public function store(StoreRequest $request)
     {
         $user = auth()->user();
         $vacancy = Vacancy::create($request->validated());
@@ -137,12 +133,12 @@ class VacancyController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param UpdateVacancyRequest $request
+     * @param UpdateRequest $request
      * @param Vacancy $vacancies
      * @return \Illuminate\Http\Response
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function update(UpdateVacancyRequest $request, Vacancy $vacancy)
+    public function update(UpdateRequest $request, Vacancy $vacancy)
     {
         $vacancies = Vacancy::find($vacancy->id);
         $vacancies->update($request->validated());

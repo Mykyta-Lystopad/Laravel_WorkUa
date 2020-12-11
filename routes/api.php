@@ -19,19 +19,16 @@ use Illuminate\Support\Facades\Route;
 */
 
 // for authentication
-Route::group(['prefix' => 'auth'], function (){
-    Route::post('register', [AuthController::class, 'register'])->name('auth.register');
-    Route::post('login', [AuthController::class, 'login'])->name('auth.login');
+Route::group(['prefix' => ''], function (){
+    Route::post('register', [AuthController::class, 'register'])->name('register');
+    Route::post('login', [AuthController::class, 'login'])->name('login');
     Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 });
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
 
 // user
-    Route::get('user', [UserController::class, 'index']);
-    Route::get('user/{id}', [UserController::class, 'show']);
-    Route::put('user/{id}', [UserController::class, 'update']);
-    Route::delete('user/{id}', [UserController::class, 'destroy']);
+    Route::apiResource('user', UserController::class)->except('store');
 
 // for organizations
     Route::apiResource('organization', OrganizationController::class);
@@ -39,7 +36,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 // for vacancies
     Route::apiResource('vacancies', VacancyController::class);
     Route::post('vacancy-book/{vacancies}', [VacancyController::class, 'book']);
-    Route::post('vacancy-unbook/{vacancies},{user}', [VacancyController::class, 'unbook']);
+    Route::post('vacancy-unbook/{vacancies}/{user}', [VacancyController::class, 'unbook']);
 
 // stats
     Route::get('stats/organizations', [StatsController::class, 'organizations']);

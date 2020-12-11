@@ -8,7 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
  * Class StoreOrganizationRequest
  * @package App\Http\Requests\Organizations
  */
-class StoreOrganizationRequest extends FormRequest
+class StoreRequest extends FormRequest
 {
 
     /**

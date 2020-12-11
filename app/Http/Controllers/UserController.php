@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\RegisterRequestRequest;
+use App\Http\Requests\User\UpdateRequest;
 use App\Models\Organization;
 use App\Models\User;
 use App\Models\Vacancy;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
@@ -14,18 +15,17 @@ use Illuminate\Http\Request;
  */
 class UserController extends Controller
 {
-//    /**
-//     * UserController constructor.
-//     * @throws \Illuminate\Auth\Access\AuthorizationException
-//     */
-//    public function __construct()
-//    {
-//        $this->authorizeResource(User::class, 'user');
-//    }
+    /**
+     * UserController constructor.
+     */
+    public function __construct()
+    {
+        $this->authorizeResource(  User::class );
+    }
 
     /**
      * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function index(Request $request)
     {
@@ -36,52 +36,44 @@ class UserController extends Controller
                 ->orWhere('first_name', 'like', '%' . $request->search . '%')
                 ->orWhere('last_name', 'like', '%' . $request->search . '%')
                 ->get();
-            return response()->json($user);
+            return $this->success($user, 200);
         }
     }
 
     /**
-     * @param $id
-     * @return \Illuminate\Http\JsonResponse
+     * @param User $user
+     * @return JsonResponse
      */
-    public function show($id)
+    public function show(User $user)
     {
-        $user = User::find($id);
-        return response()->json($user);
+        return $this->success($user, 200);
     }
 
     /**
-     * @param RegisterRequestRequest $request
-     * @param $id
-     * @return \Illuminate\Http\JsonResponse
-     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @param UpdateRequest $request
+     * @param User $user
+     * @return JsonResponse
      */
-    public function update(RegisterRequestRequest $request, $id)
+    public function update(UpdateRequest $request, User $user)
     {
-        $this->authorize('update', [User::class, $id]);
-        $user = User::find($id);
         $user->update($request->validated());
 
-        return response()->json($user);
+        return $this->success($user, 200);
     }
 
     /**
-     * @param $id
-     * @return \Illuminate\Http\JsonResponse
+     * @param User $user
+     * @return JsonResponse
      * @throws \Exception
      */
-    public function destroy($id)
+    public function destroy(User $user)
     {
-        $this->authorize('delete', [User::class, $id ]);
-
-        $user = User::find($id);
-        if ($user->role == 'admin' || $user->id == $id) {
             $vacancies = Vacancy::where('organization_id', $user->id)->delete();
             $organization = Organization::where('user_id', $user->id)->delete();
             $user->delete();
 
-            return response()->json(['message'=>'user with '. $id .' id - SoftDeleted']);
-        }
-        return response()->json(['message'=>'error']);
+            return $this->success(['message'=>'User ' .$user->first_name. ' SoftDeleted'], 200);
+
+//        return $this->error(['message'=>'This user dose not exist'], 403);
     }
 }

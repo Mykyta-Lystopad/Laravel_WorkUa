@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Organizations\StoreOrganizationRequest;
-use App\Http\Requests\Organizations\UpdateOrganizationRequest;
+use App\Http\Requests\Organizations\StoreRequest;
+use App\Http\Requests\Organizations\UpdateRequest;
 use App\Models\Organization;
 use App\Models\User;
 use App\Models\Vacancy;
@@ -25,10 +25,10 @@ class OrganizationController extends Controller
     }
 
     /**
-     * @param StoreOrganizationRequest $request
+     * @param StoreRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(StoreOrganizationRequest $request)
+    public function store(StoreRequest $request)
     {
         /** @var User  $user */
         $user = auth()->user();
@@ -47,11 +47,11 @@ class OrganizationController extends Controller
     }
 
     /**
-     * @param UpdateOrganizationRequest $request
+     * @param UpdateRequest $request
      * @param Organization $organization
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(UpdateOrganizationRequest $request, Organization $organization)
+    public function update(UpdateRequest $request, Organization $organization)
     {
         $organization->update($request->validated());
 

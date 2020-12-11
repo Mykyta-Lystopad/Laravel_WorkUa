@@ -8,7 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
  * Class UpdateOrganizationRequest
  * @package App\Http\Requests\Organizations
  */
-class UpdateOrganizationRequest extends FormRequest
+class UpdateRequest extends FormRequest
 {
     /**
      * turn array

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -8,7 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
  * Class LoginRequestRequest
  * @package App\Http\Requests
  */
-class LoginRequestRequest extends FormRequest
+class LoginRequest extends FormRequest
 {
     /**
      * @return array

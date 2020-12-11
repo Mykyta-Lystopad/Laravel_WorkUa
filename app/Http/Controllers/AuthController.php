@@ -2,25 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\LoginRequestRequest;
-use App\Http\Requests\RegisterRequestRequest;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
-use Dotenv\Exception\ValidationException;
-use Mockery\Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Class AuthController
  * @package App\Http\Controllers
- * @throws Exception
  */
 class AuthController extends Controller
 {
     /**
-     * @param RegisterRequestRequest $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @param RegisterRequest $request
+     * @return JsonResponse
      */
-    public function register(RegisterRequestRequest $request): \Symfony\Component\HttpFoundation\JsonResponse
+    public function register(RegisterRequest $request): JsonResponse
     {
         /**@var User $user */
         $user = User::create($request->validated());
@@ -30,10 +29,10 @@ class AuthController extends Controller
     }
 
     /**
-     * @param LoginRequestRequest $request
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @param LoginRequest $request
+     * @return JsonResponse
      */
-    public function login(LoginRequestRequest $request): \Symfony\Component\HttpFoundation\JsonResponse
+    public function login(LoginRequest $request): JsonResponse
     {
         /**@var User $user */
         if (!auth()->once($request->validated()))
@@ -45,17 +44,14 @@ class AuthController extends Controller
         $user = auth()->user();
         $data = UserResource::make($user)->toArray($request) +
             ['access_token' => $user->createToken('api')->plainTextToken];
-        return $this->success($data);
+        return $this->success($data, 200);
     }
 
-    public function logout(): \Symfony\Component\HttpFoundation\JsonResponse
+    /**
+     * @return JsonResponse
+     */
+    public function logout(): JsonResponse
     {
-        /**@var User $user
-         *@return bool|null
-         * @return \Illuminate\Http\RedirectResponse
-         * @throws \Exception
-         * @return bool|null
-         */
         $user = auth()->user();
         $user->currentAccessToken()->delete();
         return $this->success('successfully logged out');

@@ -35,9 +35,9 @@ class CreateVacanciesTable extends Migration
      */
     public function down()
     {
-//        Schema::dropIfExists('vacancies');
-        Schema::table('vacancies', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-        });
+        Schema::dropIfExists('vacancies');
+//        Schema::table('vacancies', function (Blueprint $table) {
+//            $table->dropSoftDeletes();
+//        });
     }
 }

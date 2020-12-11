@@ -16,12 +16,10 @@ class OrganizationSeeder extends Seeder
      */
     public function run()
     {
-        User::all()->each(function (User $user){
-            if ($user['role'] == 'employer') {
+        User::where('role', 'employer')
+            ->each(function (User $user){
                 $oranizations = Organization::factory(2)->make();
-
                 $user->organizations()->saveMany($oranizations);
-            }
         });
     }
 }

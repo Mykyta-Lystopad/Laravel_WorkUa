@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Database\Eloquent\Model;
 
 class UserPolicy
 {
@@ -21,63 +20,55 @@ class UserPolicy
     /**
      * Determine whether the user can view any models.
      *
-     * @param  \App\Models\User  $user
+     * @param User  $user
      * @return mixed
      */
     public function viewAny(User $user)
     {
-        return true;
+        return false;
     }
 
     /**
      * Determine whether the user can view the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\User  $model
+     * @param  User  $user
+     * @param  User  $model
      * @return mixed
      */
     public function view(User $user, User $model)
     {
-        return true;
+        return $user->id == $model->id;
     }
 
     /**
      * Determine whether the user can update the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\User  $model
+     * @param  User  $user
+     * @param  User  $model
      * @return mixed
      */
-    public function update(User $user, $id)
+    public function update(User $user, User $model)
     {
-//        dd('policy', $id);
-        if ( !($user->id == $id) )
-        {
-            return false;
-        }
-        return true;
+       return $user->id == $model->id;
     }
 
     /**
      * Determine whether the user can delete the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\User  $model
+     * @param  User  $user
+     * @param  User  $model
      * @return mixed
      */
-    public function delete(User $user, $id)
+    public function delete(User $user, User $model)
     {
-        if ( ($user->id == $id) )
-        {
-            return true;
-        }
+        return $user->id == $model->id;
     }
 
     /**
      * Determine whether the user can restore the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\User  $model
+     * @param  User  $user
+     * @param  User  $model
      * @return mixed
      */
     public function restore(User $user, User $model)
@@ -88,8 +79,8 @@ class UserPolicy
     /**
      * Determine whether the user can permanently delete the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\User  $model
+     * @param  User  $user
+     * @param  User  $model
      * @return mixed
      */
     public function forceDelete(User $user, User $model)

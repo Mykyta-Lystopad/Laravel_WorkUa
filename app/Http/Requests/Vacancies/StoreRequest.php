@@ -8,7 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
  * Class StoreVacancyRequest
  * @package App\Http\Requests\Vacancies
  */
-class StoreVacancyRequest extends FormRequest
+class StoreRequest extends FormRequest
 {
     /**
      * @return array

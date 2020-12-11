@@ -11,7 +11,6 @@ use App\Policies\StatsPolicy;
 use App\Policies\UserPolicy;
 use App\Policies\VacancyPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -21,11 +20,11 @@ class AuthServiceProvider extends ServiceProvider
      * @var array
      */
     protected $policies = [
-        'App\Organization' => 'App\Policies\OrganizationPolicy',
-        User::class => UserPolicy::class,
-        Organization::class => OrganizationPolicy::class,
-        Vacancy::class => VacancyPolicy::class,
-        StatsController::class => StatsPolicy::class
+//        'App\Organization' => 'App\Policies\OrganizationPolicy',
+//        User::class => UserPolicy::class,
+//        Organization::class => OrganizationPolicy::class,
+//        Vacancy::class => VacancyPolicy::class,
+//        StatsController::class => StatsPolicy::class
     ];
 
     /**
@@ -36,6 +35,5 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
-//        Gate::allows('user-can-viewAny', Organization::class);
     }
 }
