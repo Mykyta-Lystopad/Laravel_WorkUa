@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Organization;
 use App\Models\User;
 use App\Models\Vacancy;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class StatsController extends Controller
@@ -19,18 +21,18 @@ class StatsController extends Controller
         /** @var  $user */
         $user = User::withTrashed()->count();
         $userAdm = User::where('role', 'admin')->count();
-        $userWorker = User::where('role',  'worker')->count();
+        $userWorker = User::where('role', 'worker')->count();
         $userEmployer = User::where('role', 'employer')->count();
         $userDel = User::onlyTrashed()->count();
         $data = [
-            "Admin"=> $userAdm,
-            "Employer"=> $userEmployer,
-            "Worker"=> $userWorker,
-            "Soft-Deleted"=> $userDel,
-            "All"=> $user
+            "Admin" => $userAdm,
+            "Employer" => $userEmployer,
+            "Worker" => $userWorker,
+            "Soft-Deleted" => $userDel,
+            "All" => $user
         ];
 
-        return response()->json(['Statistics of users'=> $data]);
+        return response()->json(['Statistics of users' => $data]);
     }
 
     /**
@@ -40,23 +42,38 @@ class StatsController extends Controller
     public function vacancies()
     {
         $this->authorize('vacancies', StatsController::class);
+        $vacancies_active = Vacancy::with('users')->get();
+        $active =  0;
+        $close =  0;
+        foreach ($vacancies_active as $vacancy)
+        {
+            if ($vacancy->users->count() < $vacancy->workers_amount)
+                {
+                    $active++;
+                }
+            if ($vacancy->users->count() == $vacancy->workers_amount)
+                {
+                    $close++;
+                }
 
-        $vacancies_all = Vacancy::withTrashed()->count();
-        $vacancies_active = Vacancy::withTrashed()->where('status', 1)->count();
-        $vacancies_closed = Vacancy::withTrashed()->where('status', 0)->count();
+        }
         $vacancies_del = Vacancy::onlyTrashed()->count();
+        $vacancies_all = Vacancy::withTrashed()->count();
         $data = [
-          'Active'=> $vacancies_active,
-          'Closed'=> $vacancies_closed,
-          'Soft-Deleted'=> $vacancies_del,
-          'All'=> $vacancies_all
+            'Active' => $active,
+            'Closed' => $close,
+            'Soft-Deleted' => $vacancies_del,
+            'All' => $vacancies_all
         ];
 
-        return response()->json(['Statistic of vacancies: '=> $data]);
+        return response()->json(['Statistic of vacancies: ' => $data]);
+
+
     }
 
     /**
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
+     * @throws AuthorizationException
      */
     public function organizations()
     {
@@ -64,14 +81,14 @@ class StatsController extends Controller
 
         $organizationsActive = Organization::withTrashed()->count();
         $organizationsDel = Organization::onlyTrashed()->count();
-        $organizationsAll = Organization::withTrashed()->count();
+
         $data = [
-            "Active"=> $organizationsActive,
-            "Soft-Deleted"=> $organizationsDel,
-            "All"=> $organizationsAll
+            "Active" => $organizationsActive,
+            "Soft-Deleted" => $organizationsDel,
+            "All" => $organizationsActive + $organizationsDel
         ];
 
-        return response()->json(['Statistic of organizations'=>$data]);
+        return response()->json(['Statistic of organizations' => $data]);
     }
 
 

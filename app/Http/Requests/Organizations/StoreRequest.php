@@ -17,7 +17,7 @@ class StoreRequest extends FormRequest
     public function rules()
     {
         return [
-            "orgName"=>'required|string|min:3|max:100',
+            "title"=>'required|string|min:3|max:100',
             "country"=>['required','string','min:3','max:50'],
             "city"=>['required','string','min:3','max:50'],
         ];

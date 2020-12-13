@@ -16,7 +16,7 @@ class UpdateRequest extends FormRequest
     public function rules()
     {
         return [
-            "orgName"=>'sometimes|string|min:3|max:100',
+            "title"=>'sometimes|string|min:3|max:100',
             "country"=>['sometimes','string','min:3','max:50'],
             "city"=>['sometimes','string','min:3','max:50'],
         ];

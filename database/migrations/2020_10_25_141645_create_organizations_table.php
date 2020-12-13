@@ -17,7 +17,7 @@ class CreateOrganizationsTable extends Migration
         Schema::create('organizations', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(User::class)->constrained()->onDelete('cascade');
-            $table->string('orgName');
+            $table->string('title');
             $table->string('country');
             $table->string('city');
             $table->timestamps();

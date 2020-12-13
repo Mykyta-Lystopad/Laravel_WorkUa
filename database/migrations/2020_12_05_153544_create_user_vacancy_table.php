@@ -16,10 +16,6 @@ class CreateUserVacancyTable extends Migration
     public function up()
     {
         Schema::create('user_vacancy', function (Blueprint $table) {
-//            $table->primary(['user_id', 'vacancy_id']);
-//            $table->foreignIdFor(User::class);
-//            $table->foreignIdFor(Vacancy::class);
-//            $table->timestamps();
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('vacancy_id');

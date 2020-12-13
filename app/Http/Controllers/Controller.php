@@ -26,10 +26,7 @@ class Controller extends BaseController
 
     protected function error($data = null, int $status = JsonResponse::HTTP_BAD_REQUEST): JsonResponse
     {
-        return response()->json([
-            'success'=> false,
-            'data'=>$data  /*сюди пишеми повідомлення, що пішло не так(або набір повідомлень)*/
-        ], $status);
+        return response()->json(['success'=> false, 'data'=>$data], $status);
     }
 
     protected function created($data=null): JsonResponse

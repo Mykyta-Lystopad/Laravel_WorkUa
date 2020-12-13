@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\User\UpdateRequest;
-use App\Models\Organization;
 use App\Models\User;
 use App\Models\Vacancy;
 use Illuminate\Http\JsonResponse;
@@ -20,7 +19,7 @@ class UserController extends Controller
      */
     public function __construct()
     {
-        $this->authorizeResource(  User::class );
+        $this->authorizeResource(User::class);
     }
 
     /**
@@ -68,11 +67,16 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-            $vacancies = Vacancy::where('organization_id', $user->id)->delete();
-            $organization = Organization::where('user_id', $user->id)->delete();
-            $user->delete();
+        $organization = $user->organizations()->get()->pluck('id')
+            ->each(function ($organization_id){
+            $vacancies = Vacancy::where('organization_id', $organization_id)->delete();
+        });
 
-            return $this->success(['message'=>'User ' .$user->first_name. ' SoftDeleted'], 200);
+        $user->organizations()->delete();
+
+        $user->delete();
+
+        return $this->success(['message' => 'User ' . $user->first_name . ' SoftDeleted'], 200);
 
 //        return $this->error(['message'=>'This user dose not exist'], 403);
     }

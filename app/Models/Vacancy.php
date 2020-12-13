@@ -24,7 +24,7 @@ class Vacancy extends Model
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function Users() {
-        return $this->belongsToMany(User::class);
+        return $this->belongsToMany(User::class)->withTimestamps();
     }
 
 

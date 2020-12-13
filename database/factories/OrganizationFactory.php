@@ -22,7 +22,7 @@ class OrganizationFactory extends Factory
     public function definition()
     {
         return [
-            "orgName"=>$this->faker->company,
+            "title"=>$this->faker->company,
             "country"=>'Україна',
             "city"=>$this->faker->city,
         ];

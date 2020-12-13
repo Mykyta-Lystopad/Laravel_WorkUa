@@ -12,7 +12,7 @@ class OrganizationPolicy
 
     public function before(User $user)
     {
-        if ($user->role === 'admin'){
+        if ($user->role === 'admin') {
             return true;
         }
     }
@@ -20,79 +20,73 @@ class OrganizationPolicy
     /**
      * Determine whether the user can view any models.
      *
-     * @param  \App\Models\User  $user
+     * @param User $user
      * @return mixed
      */
     public function viewAny(User $user)
     {
-        return true;
+        return $user->role === 'admin';
     }
 
     /**
      * Determine whether the user can view the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Organization  $organization
+     * @param User $user
+     * @param Organization $organization
      * @return mixed
      */
     public function view(User $user, Organization $organization)
     {
-        return true;
+        return $user->role == 'employer' && $organization->user_id == $user->id;
     }
 
     /**
      * Determine whether the user can create models.
      *
-     * @param  \App\Models\User  $user
+     * @param User $user
      * @return mixed
      */
     public function create(User $user)
     {
         /** @var  $user */
-        if ($user->role == 'employer'){
-            return true;
-        }
-        return false;
+        return $user->role == 'employer';
     }
 
+    public function storeForMe()
+    {
+        return false;
+    }
     /**
      * Determine whether the user can update the model.
      *
-     * @param  User  $user
-     * @param  Organization  $organization
+     * @param User $user
+     * @param Organization $organization
      * @return mixed
      */
     public function update(User $user, Organization $organization)
     {
-        if ($user->role === 'employer' && $organization->user_id === $user->id){
-            return true;
-        }
-        return false;
+        return $user->role === 'employer' && $organization->user_id === $user->id;
     }
 
     /**
      * Determine whether the user can delete the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Organization  $organization
+     * @param User $user
+     * @param Organization $organization
      * @return mixed
      */
     public function delete(User $user, Organization $organization)
     {
         /** @var  $user */
-//        dd($user->role);
-//        dd($organization->user_id, $user->id);
-        if ( !($user->role === 'employer' && ($organization->user_id === $user->id)) ){
-            return false;
-        }
-        return response()->json(['message'=>'You can not delete this organization']);
+        return $user->role === 'employer' && ($organization->user_id === $user->id);
+
     }
 
     /**
      * Determine whether the user can restore the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Organization  $organization
+     * @param User $user
+     * @param Organization $organization
      * @return mixed
      */
     public function restore(User $user, Organization $organization)
@@ -103,8 +97,8 @@ class OrganizationPolicy
     /**
      * Determine whether the user can permanently delete the model.
      *
-     * @param  \App\Models\User  $user
-     * @param  \App\Models\Organization  $organization
+     * @param \App\Models\User $user
+     * @param \App\Models\Organization $organization
      * @return mixed
      */
     public function forceDelete(User $user, Organization $organization)

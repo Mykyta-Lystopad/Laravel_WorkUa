@@ -18,10 +18,8 @@ class CreateVacanciesTable extends Migration
         Schema::create('vacancies', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Organization::class)->default(1);
-            $table->boolean('status')->default(true);
-            $table->string('name');
-            $table->unsignedInteger('workers_need');
-            $table->bigInteger('booking')->default(0);
+            $table->string('vacancy_name');
+            $table->unsignedInteger('workers_amount');
             $table->string('salary');
             $table->timestamps();
             $table->SoftDeletes();
@@ -36,8 +34,5 @@ class CreateVacanciesTable extends Migration
     public function down()
     {
         Schema::dropIfExists('vacancies');
-//        Schema::table('vacancies', function (Blueprint $table) {
-//            $table->dropSoftDeletes();
-//        });
     }
 }

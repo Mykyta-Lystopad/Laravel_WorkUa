@@ -28,10 +28,12 @@ class VacancySeeder extends Seeder
 
         });
 
-        User::all()->each(function (User $user) {
-           $vacancy = Vacancy::all()->random(2);
-           $user->vacancies()->attach($vacancy);
-        });
-    }
+        Vacancy::all()->each(function (Vacancy $vacancy) {
+            $users = User::all()->random(5)->except([2,3,4,5,6]);
 
+            $vacancy->users()->attach($users);
+        });
+
+
+    }
 }

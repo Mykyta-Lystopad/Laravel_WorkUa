@@ -56,7 +56,7 @@ class User extends Authenticatable
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function Vacancies() {
-        return $this->belongsToMany(Vacancy::class);
+        return $this->belongsToMany(Vacancy::class)->withTimestamps();
     }
 
     /**

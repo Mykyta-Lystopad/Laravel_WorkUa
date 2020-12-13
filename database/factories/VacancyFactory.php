@@ -22,10 +22,8 @@ class VacancyFactory extends Factory
     public function definition()
     {
         return [
-            "name" => $this->faker->jobTitle,
-            "status" => true,
-            "workers_need" => rand(5, 11),
-            "booking" => 3,
+            "vacancy_name" => $this->faker->jobTitle,
+            "workers_amount" => 5,
             "salary" => rand(10000, 55000)
         ];
     }
