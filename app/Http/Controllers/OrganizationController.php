@@ -145,9 +145,15 @@ class OrganizationController extends Controller
      */
     public function destroy(Organization $organization)
     {
+        $vacancies = Vacancy::where('organization_id', $organization->id)->get();
+
+        foreach ($vacancies->pluck('id') as $vacancy)
+        {
+            $users = \DB::table('user_vacancy')->where('vacancy_id', $vacancy)->delete();
+        }
         $vacancies = Vacancy::where('organization_id', $organization->id)->delete();
         $organization->delete();
-        return $this->success(['message' => 'Organization deleted'], JsonResponse::HTTP_NO_CONTENT);
+        return $this->success(['message' => 'Organization ' . $organization->title . ' SoftDeleted'], 204);
     }
 
 }

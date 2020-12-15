@@ -36,19 +36,19 @@ class VacancyController extends Controller
      */
     public function vacanciesHelper($user, $id, $vacancy2)
     {
-        if ($id == 2){
+        if ($id == 2) {
             $organization = Organization::all();
         }
-        if ($id == 1){
+        if ($id == 1) {
             $organization = Organization::where('user_id', $user->id)->get();
         }
         if ($id == 3) {
             $organization = Organization::where('id', $vacancy2->organization_id)->get();
-            if ($organization->contains($user->id)){
+            if ($organization->contains($user->id)) {
                 $vacancy2->load('users');
                 return response()->json($vacancy2);
             }
-            return response()->json(['message'=> 'It is not of your vacancy or vacancy is not exist']);
+            return response()->json(['message' => 'It is not of your vacancy or vacancy is not exist']);
         }
         foreach ($organization as $org) {
             foreach ($org->vacancies as $vacancy) {
@@ -62,17 +62,17 @@ class VacancyController extends Controller
                 }
             }
         }
-        if ($id === 1){
+        if ($id === 1) {
             return response()->json($vacancy_closed);
         }
-        if ($id === 2){
-            if ($vacancy2 != null){
-                foreach ($vacancy_active as $value){
-                    if ($vacancy2->id == $value->id){
+        if ($id === 2) {
+            if ($vacancy2 != null) {
+                foreach ($vacancy_active as $value) {
+                    if ($vacancy2->id == $value->id) {
                         return response()->json($vacancy2);
                     }
                 }
-                return response()->json(['message'=>'Vacancy closed']);
+                return response()->json(['message' => 'Vacancy closed']);
             }
             return response()->json($vacancy_active);
 
@@ -90,7 +90,7 @@ class VacancyController extends Controller
         if ($user->role === 'worker' || $user->role === 'employer') {
             return response()->json($this->vacanciesHelper($user, 2, null));
         }
-        if ($user->role === 'admin'){
+        if ($user->role === 'admin') {
             if ($request->only_active == true) {
                 return response()->json($this->vacanciesHelper($user, 2, null));
             } else {
@@ -107,14 +107,11 @@ class VacancyController extends Controller
     public function show(Vacancy $vacancy)
     {
         $user = auth()->user();
-        if ($user->role === 'admin')
-        {
+        if ($user->role === 'admin') {
             $vacancy->load('users');
 
             return response()->json($vacancy);
-        }
-        elseif ($user->role === 'employer')
-        {
+        } elseif ($user->role === 'employer') {
             return response()->json($this->vacanciesHelper($user, 3, $vacancy));
         }
 
@@ -144,19 +141,15 @@ class VacancyController extends Controller
         $this->authorize('book', Vacancy::class);
 
         $vacancy = Vacancy::find($request->vacancy_id);
-        if ($vacancy->users->count() < $vacancy->workers_amount)
-        {
+        if ($vacancy->users->count() < $vacancy->workers_amount) {
             $user = User::find($request->user_id);
-            if ( $vacancy->users->contains($user->id))
-            {
+            if ($vacancy->users->contains($user->id)) {
                 return $this->success(['message' => 'You already booked'], 202);
             }
-            if ($user->role === 'worker'){
+            if ($user->role === 'worker') {
                 $user->vacancies()->attach($vacancy);
             }
-        }
-        elseif ($vacancy->users->count() == $vacancy->workers_amount)
-        {
+        } elseif ($vacancy->users->count() == $vacancy->workers_amount) {
             return $this->error(['message' => 'Vacancy closed'], 403);
         }
         return $this->success(['message' => 'Booking success'], 200);
@@ -176,19 +169,16 @@ class VacancyController extends Controller
         $authUser = auth()->user();
         $owner = Organization::find($vacancy->organization_id)->user_id;
 //        dd($owner);
-        if (($user->id == $authUser->id) || ($authUser->id == $owner) || $authUser->role == 'admin')
-        {
-            if ( $vacancy->users->contains($user->id) )
-            {
+        if (($user->id == $authUser->id) || ($authUser->id == $owner) || $authUser->role == 'admin') {
+            if ($vacancy->users->contains($user->id)) {
                 $user->vacancies()->detach($vacancy);
-                return $this->success(['message' => 'User ' .$user->first_name. ' unbooked'], 200);
+                return $this->success(['message' => 'User ' . $user->first_name . ' unbooked'], 200);
             }
 //            elseif ($user->role == 'employer' || $user->role == 'admin' || $user->id !== $authUser->id)
 //            {
 //                return $this->error(['message' => 'Unbooking refuse'], 403);
 //            }
-            else
-            {
+            else {
                 return $this->success(['message' => 'You did not book'], 200);
             }
         }
@@ -216,7 +206,7 @@ class VacancyController extends Controller
      */
     public function destroy(Vacancy $vacancy)
     {
-        $vacancy->users()->delete();
+        $users = \DB::table('user_vacancy')->where('vacancy_id', $vacancy->id)->delete();
         $vacancy->delete();
         return response()->json(['message' => 'Object was deleted'], 204);
     }

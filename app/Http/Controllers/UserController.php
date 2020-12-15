@@ -69,14 +69,20 @@ class UserController extends Controller
     {
         $organization = $user->organizations()->get()->pluck('id')
             ->each(function ($organization_id){
-            $vacancies = Vacancy::where('organization_id', $organization_id)->delete();
+                $vacancies = Vacancy::where('organization_id', $organization_id)->get();
+
+                foreach ($vacancies->pluck('id') as $vacancy)
+                {
+                    $users = \DB::table('user_vacancy')->where('vacancy_id', $vacancy)->delete();
+                }
+                $vacancies = Vacancy::where('organization_id', $organization_id)->delete();
         });
 
         $user->organizations()->delete();
 
         $user->delete();
 
-        return $this->success(['message' => 'User ' . $user->first_name . ' SoftDeleted'], 200);
+        return $this->success(['message' => 'User ' . $user->first_name . ' SoftDeleted'], 204);
 
 //        return $this->error(['message'=>'This user dose not exist'], 403);
     }
