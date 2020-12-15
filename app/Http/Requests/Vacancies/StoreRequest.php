@@ -16,8 +16,8 @@ class StoreRequest extends FormRequest
     public function rules()
     {
         return [
-            "name"=>'required|string|min:2|max:50',
-            "workers_need"=>'required|numeric|min:1',
+            "vacancy_name"=>'required|string|min:2|max:50',
+            "workers_amount"=>'required|numeric|min:1',
             "salary"=>'required|numeric|min:1'
         ];
     }

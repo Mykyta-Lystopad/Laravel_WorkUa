@@ -52,15 +52,15 @@ class VacancyPolicy
     /**
      * @return bool
      */
-    public function book()
+    public function book(User $user)
     {
-        return true;
+        return $user->role === 'worker';
     }
 
     /**
      * @return bool
      */
-    public function unbook()
+    public function unbooked(User $user)
     {
         return true;
     }

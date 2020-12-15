@@ -15,8 +15,8 @@ class Vacancy extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-      "name",
-      "workers_need",
+      "vacancy_name",
+      "workers_amount",
       "salary"
     ];
 

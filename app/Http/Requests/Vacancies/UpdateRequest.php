@@ -17,8 +17,8 @@ class UpdateRequest extends FormRequest
     public function rules()
     {
         return [
-            "name"=>'sometimes|string|min:2|max:50',
-            "workers_need"=>'sometimes|numeric|min:1',
+            "vacancy_name"=>'sometimes|string|min:2|max:50',
+            "workers_amount"=>'sometimes|numeric|min:1',
             "salary"=>'sometimes|numeric|min:1'
         ];
     }

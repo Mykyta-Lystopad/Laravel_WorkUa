@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Vacancies\StoreRequest;
 use App\Http\Requests\Vacancies\UpdateRequest;
+use App\Http\Resources\VacancyResource;
 use App\Models\Organization;
 use App\Models\User;
 use App\Models\Vacancy;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
  * Class VacancyController
@@ -21,17 +25,79 @@ class VacancyController extends Controller
      */
     public function __construct()
     {
-        $this->authorizeResource(  Vacancy::class, 'vacancy' );
+        $this->authorizeResource(Vacancy::class, 'vacancy');
     }
 
     /**
+     * @param $user
+     * @param $id
+     * @param $vacancy2
      * @return JsonResponse
      */
-    public function index()
+    public function vacanciesHelper($user, $id, $vacancy2)
     {
-        /** @var  $vacancy */
-        $vacancy = Vacancy::with('users')->get();
-        return response()->json($vacancy);
+        if ($id == 2){
+            $organization = Organization::all();
+        }
+        if ($id == 1){
+            $organization = Organization::where('user_id', $user->id)->get();
+        }
+        if ($id == 3) {
+            $organization = Organization::where('id', $vacancy2->organization_id)->get();
+            if ($organization->contains($user->id)){
+                $vacancy2->load('users');
+                return response()->json($vacancy2);
+            }
+            return response()->json(['message'=> 'It is not of your vacancy or vacancy is not exist']);
+        }
+        foreach ($organization as $org) {
+            foreach ($org->vacancies as $vacancy) {
+                if ($vacancy->users->count() === $vacancy->workers_amount) {
+
+                    $vacancy_closed[] = ($vacancy->withoutRelations());
+
+                } elseif ($vacancy->users->count() < $vacancy->workers_amount) {
+                    $vacancy_active[] = ($vacancy->withoutRelations());
+                    $vacancy_active_relations[] = ($vacancy);
+                }
+            }
+        }
+        if ($id === 1){
+            return response()->json($vacancy_closed);
+        }
+        if ($id === 2){
+            if ($vacancy2 != null){
+                foreach ($vacancy_active as $value){
+                    if ($vacancy2->id == $value->id){
+                        return response()->json($vacancy2);
+                    }
+                }
+                return response()->json(['message'=>'Vacancy closed']);
+            }
+            return response()->json($vacancy_active);
+
+        }
+
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse|AnonymousResourceCollection
+     */
+    public function index(Request $request)
+    {
+        $user = auth()->user();
+        if ($user->role === 'worker' || $user->role === 'employer') {
+            return response()->json($this->vacanciesHelper($user, 2, null));
+        }
+        if ($user->role === 'admin'){
+            if ($request->only_active == true) {
+                return response()->json($this->vacanciesHelper($user, 2, null));
+            } else {
+                $vacancy = Vacancy::all();
+                return VacancyResource::collection($vacancy);
+            }
+        }
     }
 
     /**
@@ -40,7 +106,19 @@ class VacancyController extends Controller
      */
     public function show(Vacancy $vacancy)
     {
-        return response()->json($vacancy, 200);
+        $user = auth()->user();
+        if ($user->role === 'admin')
+        {
+            $vacancy->load('users');
+
+            return response()->json($vacancy);
+        }
+        elseif ($user->role === 'employer')
+        {
+            return response()->json($this->vacanciesHelper($user, 3, $vacancy));
+        }
+
+        return response()->json($this->vacanciesHelper($user, 2, $vacancy));
     }
 
     /**
@@ -54,89 +132,75 @@ class VacancyController extends Controller
         $organization = Organization::find($user->id);
         $organization->vacancies()->save($vacancy);
         return response()->json($vacancy, 201);
-     }
-
-    /**
-     * @param $id
-     * @return JsonResponse
-     * @throws \Illuminate\Auth\Access\AuthorizationException
-     */
-    public function book($id)
-    {
-        $this->authorize('book', Vacancy::class);
-        $vacancy = Vacancy::find($id);
-        $user = auth()->user();
-        $vacancy_user_id = $vacancy->users->find($user->id);
-
-        if ($vacancy_user_id === null && $vacancy->workers_need > 0)
-        {
-            $vacancy->workers_need -= 1;
-            $vacancy->booking += 1;
-
-            $vacancy->update();
-            $user->vacancies()->attach($vacancy);
-            return response()->json(['message' => 'Booking success'], 200 );
-        }
-        elseif ($vacancy_user_id === null || $vacancy->workers_need === 0)
-        {
-            $vacancy->status = false;
-            $vacancy->update();
-            return response()->json(['message' => 'Vacancy - closed'], 200 );
-        }
-        elseif ($vacancy_user_id->id === $user->id)
-        {
-            return response()->json(['message' => 'This user booked already'], 200 );
-        }
-
     }
 
     /**
-     * @param $id
+     * @param Request $request
      * @return JsonResponse
-     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws AuthorizationException
      */
-    public function unbook($user_id, $vacancy_id)
+    public function book(Request $request)
     {
-        $this->authorize('unbook', Vacancy::class);
+        $this->authorize('book', Vacancy::class);
 
-        $auth_user = auth()->user();
-
-        $vacancy = Vacancy::find($vacancy_id);
-        $organization_belong = Organization::find($vacancy->organization_id)->user_id;
-        $user = User::find($user_id);
-        $vacancy_user_id = $vacancy->users->find($user_id);
-
-        if ($vacancy_user_id === null)
+        $vacancy = Vacancy::find($request->vacancy_id);
+        if ($vacancy->users->count() < $vacancy->workers_amount)
         {
-            return response()->json(['message'=>'User was not booked'] );
-        }
-
-        elseif ( ($auth_user->role === 'admin')
-            || ($auth_user->id === $organization_belong)
-            || ($auth_user->id === $vacancy_user_id->id) )
-        {
-
-            $vacancy->workers_need += 1;
-            $vacancy->booking -= 1;
-            if ($vacancy->status === false)
+            $user = User::find($request->user_id);
+            if ( $vacancy->users->contains($user->id))
             {
-                $vacancy->status = true;
+                return $this->success(['message' => 'You already booked'], 202);
             }
-            $vacancy->update();
-            $user->vacancies()->detach($vacancy);
-            return response()->json(['message'=>'User '. $user->first_name .' was unbooked successfully']);
+            if ($user->role === 'worker'){
+                $user->vacancies()->attach($vacancy);
+            }
         }
+        elseif ($vacancy->users->count() == $vacancy->workers_amount)
+        {
+            return $this->error(['message' => 'Vacancy closed'], 403);
+        }
+        return $this->success(['message' => 'Booking success'], 200);
+    }
 
-        return response()->json(['message'=>'You can not unbook this user']);
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     * @throws AuthorizationException
+     */
+    public function unbooked(Request $request)
+    {
+        $this->authorize('unbooked', Vacancy::class);
+
+        $vacancy = Vacancy::find($request->vacancy_id);
+        $user = User::find($request->user_id);
+        $authUser = auth()->user();
+        $owner = Organization::find($vacancy->organization_id)->user_id;
+//        dd($owner);
+        if (($user->id == $authUser->id) || ($authUser->id == $owner) || $authUser->role == 'admin')
+        {
+            if ( $vacancy->users->contains($user->id) )
+            {
+                $user->vacancies()->detach($vacancy);
+                return $this->success(['message' => 'User ' .$user->first_name. ' unbooked'], 200);
+            }
+//            elseif ($user->role == 'employer' || $user->role == 'admin' || $user->id !== $authUser->id)
+//            {
+//                return $this->error(['message' => 'Unbooking refuse'], 403);
+//            }
+            else
+            {
+                return $this->success(['message' => 'You did not book'], 200);
+            }
+        }
+        return $this->error(['message' => 'Unbooking refuse'], 403);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param UpdateRequest $request
-     * @param Vacancy $vacancies
+     * @param Vacancy $vacancy
      * @return \Illuminate\Http\Response
-     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function update(UpdateRequest $request, Vacancy $vacancy)
     {
@@ -152,7 +216,8 @@ class VacancyController extends Controller
      */
     public function destroy(Vacancy $vacancy)
     {
+        $vacancy->users()->delete();
         $vacancy->delete();
-        return response()->json(['message'=> 'Object was deleted'], 204);
+        return response()->json(['message' => 'Object was deleted'], 204);
     }
 }

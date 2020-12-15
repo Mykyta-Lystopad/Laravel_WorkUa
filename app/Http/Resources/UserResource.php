@@ -2,12 +2,14 @@
 
 namespace App\Http\Resources;
 
+use App\Models\User;
 use Illuminate\Http\Client\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * Class UserResource
  * @package App\Http\Resources
+ * @mixin User
  */
 class UserResource extends JsonResource
 {

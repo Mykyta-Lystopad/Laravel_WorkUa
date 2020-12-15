@@ -18,10 +18,7 @@ class Controller extends BaseController
 
     protected function success($data = null, int $status = JsonResponse::HTTP_OK): JsonResponse
     {
-        return response()->json([
-            'success'=> true, // відображає результат запиту
-            'data'=>$data, /*об'єкт, який ми повертаємо юзеру, або ресурс для пагінацій*/
-        ], $status);
+        return response()->json(['success'=> true, 'data'=>$data, ], $status);
     }
 
     protected function error($data = null, int $status = JsonResponse::HTTP_BAD_REQUEST): JsonResponse

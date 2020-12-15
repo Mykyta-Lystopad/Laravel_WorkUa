@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Organizations\StoreRequest;
 use App\Http\Requests\Organizations\UpdateRequest;
+use App\Http\Resources\OrganizationResourceCollection;
 use App\Models\Organization;
 use App\Models\User;
 use App\Models\Vacancy;
@@ -19,14 +20,19 @@ class OrganizationController extends Controller
     }
 
     /**
-     * @return JsonResponse
+     * @return OrganizationResourceCollection
      */
     public function index()
     {
         $user = auth()->user();
-        $organization = Organization::with('vacancies')
-            ->where('user_id', $user->id)->get();
-        return $this->success($organization, 200);
+        if ($user->role === 'admin') {
+            return OrganizationResourceCollection::make(Organization::all());
+        } elseif ($user->role === 'employer') {
+            $organization = Organization::where('user_id', $user->id)->get();
+            return OrganizationResourceCollection::make($organization);
+        }
+
+
     }
 
     /**
@@ -55,8 +61,7 @@ class OrganizationController extends Controller
     {
         $this->authorize('storeForMe', Organization::class);
 
-        if ($user->role === 'employer')
-        {
+        if ($user->role === 'employer') {
             $organization = $user->organizations()->create($request->validated());
 
             return $this->success($organization, JsonResponse::HTTP_CREATED);

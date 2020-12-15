@@ -1,24 +1,31 @@
 <?php
 
-namespace App\Http\Resources\Resources;
+namespace App\Http\Resources;
 
+use App\Models\Organization;
 use Illuminate\Http\Client\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-
+/**
+ * Class OrganizationResource
+ * @package App\Http\Resources\Resources
+ * @mixin Organization
+ */
 class OrganizationResource extends JsonResource
 {
     /**
-     * Transform the resource into an array.
-     *
-     * @param  Request  $request
+     * @param Request $request
      * @return array
      */
     public function toArray($request)
     {
         return [
-            "title",
-            "country",
-            "city"
+            'id'=> $this->id,
+            'user_id'=> $this->user_id,
+            'title'=> $this->title,
+            'country'=> $this->country,
+            'city'=> $this->city,
+            'created_at'=> $this->created_at,
+            'updated_at'=> $this->updated_at,
         ];
     }
 }
