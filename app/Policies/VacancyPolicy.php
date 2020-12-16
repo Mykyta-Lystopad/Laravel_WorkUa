@@ -43,10 +43,7 @@ class VacancyPolicy
      */
     public function create(User $user)
     {
-        if ($user->role == 'employer'){
-            return true;
-        }
-        return false;
+        return $user->role == 'employer';
     }
 
     /**
@@ -54,7 +51,7 @@ class VacancyPolicy
      */
     public function book(User $user)
     {
-        return $user->role === 'worker';
+        return true;
     }
 
     /**
