@@ -48,7 +48,7 @@ class OrganizationController extends Controller
                 ->json(['success' => false, 'data' => 'Admin or workers can not create organizations'], 403);
         }
         $organization = $user->organizations()->create($request->validated());
-        return $this->success($organization, JsonResponse::HTTP_CREATED);
+        return $this->success($organization, 201);
     }
 
     /**
@@ -64,7 +64,7 @@ class OrganizationController extends Controller
         if ($user->role === 'employer') {
             $organization = $user->organizations()->create($request->validated());
 
-            return $this->success($organization, JsonResponse::HTTP_CREATED);
+            return $this->success($organization, 201);
         }
         return response()
             ->json(['success' => false, 'data' => 'Admin can not create organizations for workers or for yourself'], 403);
@@ -147,9 +147,10 @@ class OrganizationController extends Controller
     {
         $vacancies = Vacancy::where('organization_id', $organization->id)->get();
 
-        foreach ($vacancies->pluck('id') as $vacancy)
+        foreach ($vacancies as $vacancy)
         {
-            $users = \DB::table('user_vacancy')->where('vacancy_id', $vacancy)->delete();
+            $usersAll = $vacancy->users;
+            $vacancy->users()->detach($usersAll);
         }
         $vacancies = Vacancy::where('organization_id', $organization->id)->delete();
         $organization->delete();

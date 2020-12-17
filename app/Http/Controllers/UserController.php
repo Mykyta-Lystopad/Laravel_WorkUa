@@ -29,8 +29,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         if ($request->search) {
-            $user = \DB::table('users')
-                ->where('country', 'like', '%' . $request->search . '%')
+            $user = User::where('country', 'like', '%' . $request->search . '%')
                 ->orWhere('city', 'like', '%' . $request->search . '%')
                 ->orWhere('first_name', 'like', '%' . $request->search . '%')
                 ->orWhere('last_name', 'like', '%' . $request->search . '%')
@@ -71,9 +70,10 @@ class UserController extends Controller
             ->each(function ($organization_id){
                 $vacancies = Vacancy::where('organization_id', $organization_id)->get();
 
-                foreach ($vacancies->pluck('id') as $vacancy)
+                foreach ($vacancies as $vacancy)
                 {
-                    $users = \DB::table('user_vacancy')->where('vacancy_id', $vacancy)->delete();
+                    $usersAll = $vacancy->users;
+                    $vacancy->users()->detach($usersAll);
                 }
                 $vacancies = Vacancy::where('organization_id', $organization_id)->delete();
         });
@@ -83,7 +83,5 @@ class UserController extends Controller
         $user->delete();
 
         return $this->success(['message' => 'User ' . $user->first_name . ' SoftDeleted'], 204);
-
-//        return $this->error(['message'=>'This user dose not exist'], 403);
     }
 }

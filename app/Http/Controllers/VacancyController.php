@@ -126,14 +126,11 @@ class VacancyController extends Controller
     {
         $user = auth()->user();
         $organization = Organization::find($request->organization_id);
-        if ($organization->user_id === $user->id)
-        {
+        if ($organization->user_id === $user->id) {
             $vacancy = Vacancy::create($request->validated());
             $organization->vacancies()->save($vacancy);
             return response()->json($vacancy, 201);
-        }
-        else
-        {
+        } else {
             return $this->error(['message' => 'Action refused'], 403);
         }
     }
@@ -157,11 +154,10 @@ class VacancyController extends Controller
             if ($vacancy->users->contains($user->id)) {
                 return $this->success(['message' => 'You already booked'], 202);
             }
-            if ( $user->role === 'worker' &&
+            if ($user->role === 'worker' &&
                 ($authUser->id === $request->user_id
-                || $authUser->role === 'admin'
-                || $authUser->id === $owner) )
-            {
+                    || $authUser->role === 'admin'
+                    || $authUser->id === $owner)) {
                 $user->vacancies()->attach($vacancy);
                 return $this->success(['message' => 'Booking success'], 200);
             }
@@ -169,12 +165,10 @@ class VacancyController extends Controller
             return $this->error(['message' => 'Vacancy closed'], 403);
         }
         // запрет на регистрацию работодателей, себя как работодателя на свою вакансию и ост.
-        if (($user->role === 'employer' || $user->role === 'admin') && $authUser->id !== $user->id)
-        {
+        if (($user->role === 'employer' || $user->role === 'admin') && $authUser->id !== $user->id) {
             return $this->error(['message' => 'You can not booking any employers or admins'], 403);
         }
-        if ($user->role === 'employer' && $authUser->id === $user->id)
-        {
+        if ($user->role === 'employer' && $authUser->id === $user->id) {
             return $this->error(['message' => 'You can not booking for yourself'], 403);
         }
         return $this->success(['message' => 'Booking refused'], 403);
@@ -197,12 +191,7 @@ class VacancyController extends Controller
             if ($vacancy->users->contains($user->id)) {
                 $user->vacancies()->detach($vacancy);
                 return $this->success(['message' => 'User ' . $user->first_name . ' unbooked'], 200);
-            }
-//            elseif ($user->role == 'employer' || $user->role == 'admin' || $user->id !== $authUser->id)
-//            {
-//                return $this->error(['message' => 'Unbooking refuse'], 403);
-//            }
-            else {
+            } else {
                 return $this->success(['message' => 'You did not book'], 200);
             }
         }
@@ -230,7 +219,8 @@ class VacancyController extends Controller
      */
     public function destroy(Vacancy $vacancy)
     {
-        $users = \DB::table('user_vacancy')->where('vacancy_id', $vacancy->id)->delete();
+        $usersAll = $vacancy->users;
+        $vacancy->users()->detach($usersAll);
         $vacancy->delete();
         return response()->json(['message' => 'Object was deleted'], 204);
     }
