@@ -19,11 +19,11 @@ use Illuminate\Support\Facades\Route;
 */
 
 // for authentication
-Route::group(['prefix' => ''], function (){
-    Route::post('register', [AuthController::class, 'register'])->name('register');
-    Route::post('login', [AuthController::class, 'login'])->name('login');
-    Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-});
+//Route::group(['prefix' => ''], function (){
+Route::post('register', [AuthController::class, 'register'])->name('register');
+Route::post('login', [AuthController::class, 'login'])->name('login');
+Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+//});
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
 
@@ -32,7 +32,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 // for organizations
     Route::apiResource('organization', OrganizationController::class);
-    Route::post('create-organization-for-me/{user}', [OrganizationController::class, 'storeForMe'] );
+    Route::post('createOrganizationForEmployer/{user}', [OrganizationController::class, 'storeForEmployers']);
 
 // for vacancies
     Route::apiResource('vacancy', VacancyController::class);

@@ -7,13 +7,12 @@ use App\Models\User;
 use App\Models\Vacancy;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class StatsController extends Controller
 {
     /**
-     * @return \Illuminate\Http\JsonResponse
-     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @return JsonResponse
+     * @throws AuthorizationException
      */
     public function users()
     {
@@ -36,39 +35,24 @@ class StatsController extends Controller
     }
 
     /**
-     * @return \Illuminate\Http\JsonResponse
-     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @return JsonResponse
+     * @throws AuthorizationException
      */
     public function vacancies()
     {
         $this->authorize('vacancies', StatsController::class);
-        $vacancies_active = Vacancy::with('users')->get();
-        $active =  0;
-        $close =  0;
-        foreach ($vacancies_active as $vacancy)
-        {
-            if ($vacancy->users->count() < $vacancy->workers_amount)
-                {
-                    $active++;
-                }
-            if ($vacancy->users->count() == $vacancy->workers_amount)
-                {
-                    $close++;
-                }
 
-        }
+        $vacancies_active = Vacancy::all()->where('status', '=','active')->count();
+        $vacancies_closed = Vacancy::all()->where('status', '=','closed')->count();
         $vacancies_del = Vacancy::onlyTrashed()->count();
         $vacancies_all = Vacancy::withTrashed()->count();
         $data = [
-            'Active' => $active,
-            'Closed' => $close,
+            'Active' => $vacancies_active,
+            'Closed' => $vacancies_closed,
             'Soft-Deleted' => $vacancies_del,
             'All' => $vacancies_all
         ];
-
         return response()->json(['Statistic of vacancies: ' => $data]);
-
-
     }
 
     /**

@@ -19,6 +19,28 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
+    public static function boot()
+    {
+        parent::boot();
+
+        self::deleting(function (self $model){
+            foreach ($model->organizations as $organization){
+                $organization->delete();
+            }
+            $vacancies = Vacancy::all();
+            foreach ($vacancies as $vacancy){
+
+                $users = $vacancy->users;
+                foreach ($users as $user){
+                    if ($model->id == $user->id){
+
+                        $vacancy->users()->detach($user);
+                    }
+                }
+            }
+        });
+    }
+
     /**
      * The attributes that are mass assignable.
      *
@@ -36,13 +58,6 @@ class User extends Authenticatable
     ];
 
     protected $attributes = [
-//        'first_name',
-//        'last_name',
-//        'email',
-//        'password',
-//        'country',
-//        'city',
-//        'telephone',
         'role'=>'worker'
     ];
 

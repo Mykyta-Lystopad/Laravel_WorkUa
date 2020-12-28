@@ -4,13 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Organizations\StoreRequest;
 use App\Http\Requests\Organizations\UpdateRequest;
-use App\Http\Resources\OrganizationResourceCollection;
+use App\Http\Resources\OrganizationResource;
 use App\Models\Organization;
 use App\Models\User;
-use App\Models\Vacancy;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class OrganizationController extends Controller
 {
@@ -20,19 +19,40 @@ class OrganizationController extends Controller
     }
 
     /**
-     * @return OrganizationResourceCollection
+     * @return AnonymousResourceCollection
      */
     public function index()
     {
         $user = auth()->user();
-        if ($user->role === 'admin') {
-            return OrganizationResourceCollection::make(Organization::all());
-        } elseif ($user->role === 'employer') {
-            $organization = Organization::where('user_id', $user->id)->get();
-            return OrganizationResourceCollection::make($organization);
+        if ($user->role === 'admin')
+        {
+            return OrganizationResource::collection(Organization::all());
         }
+            return OrganizationResource::collection(Organization::where('user_id', $user->id)->get());
+    }
 
-
+    /**
+     * @param Organization $organization
+     * @return JsonResponse
+     */
+    public function show(Organization $organization)
+    {
+            if (request()->workers === '1'){
+                $workers = $organization->vacancies()->with('users')->get()->pluck('users')->flatten();
+                return $this->success($workers);
+            } elseif (request()->vacancies === '1') {
+                $vacancyActive = $organization->vacancies->where('status', 'active');
+                return $this->success($vacancyActive);
+            } elseif (request()->vacancies === '2') {
+                $vacancyClosed = $organization->vacancies->where('status', 'closed');
+                return $this->success($vacancyClosed);
+            }
+            elseif (request()->vacancies === '3') {
+                $vacanciesAll = $organization->vacancies;
+                return $this->success($vacanciesAll);
+            } else{
+                return $this->success($organization);
+            }
     }
 
     /**
@@ -43,12 +63,8 @@ class OrganizationController extends Controller
     {
         /** @var User $user */
         $user = auth()->user();
-        if ($user->role === 'admin' || $user->role === 'worker') {
-            return response()
-                ->json(['success' => false, 'data' => 'Admin or workers can not create organizations'], 403);
-        }
         $organization = $user->organizations()->create($request->validated());
-        return $this->success($organization, 201);
+        return $this->created($organization);
     }
 
     /**
@@ -57,73 +73,16 @@ class OrganizationController extends Controller
      * @return JsonResponse
      * @throws AuthorizationException
      */
-    public function storeForMe(StoreRequest $request, User $user)
+    public function storeForEmployers(StoreRequest $request, User $user)
     {
-        $this->authorize('storeForMe', Organization::class);
+        $this->authorize('storeForEmployers', Organization::class);
 
         if ($user->role === 'employer') {
             $organization = $user->organizations()->create($request->validated());
 
-            return $this->success($organization, 201);
+            return $this->created($organization);
         }
-        return response()
-            ->json(['success' => false, 'data' => 'Admin can not create organizations for workers or for yourself'], 403);
-
-    }
-
-    /**
-     * @param Organization $organization
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function show(Organization $organization, Request $request)
-    {
-        $vacanciesActive = [];
-        $vacanciesClosed = [];
-        $vacancy_active = 0;
-        $vacancy_closed = 0;
-        $vacancies = Vacancy::where('organization_id', $organization->id)->get();
-        foreach ($vacancies as $vacancy) {
-            $usersAll[] = $vacancy->users;
-            if ($vacancy->users->count() < $vacancy->workers_amount) {
-                $vacancy_active++;
-                $vacanciesActive[] = ($vacancy->withoutRelations());
-            } elseif ($vacancy->users->count() == $vacancy->workers_amount) {
-                $vacancy_closed++;
-                $vacanciesClosed[] = $vacancy->withoutRelations();
-            }
-        }
-
-        if ($request->vacancies == 1) {
-            if ($vacancy_active == 0) {
-                return $this->success(['message' => 'You do not have active vacancies'], 200);
-            } else {
-                return $this->success($vacanciesActive, 200);
-            }
-        }
-
-        if ($request->vacancies == 2) {
-            if ($vacancy_closed == 0) {
-                return $this->success(['message' => 'You do not have closed vacancies'], 200);
-            } else {
-                return $this->success($vacanciesClosed, 200);
-            }
-
-        }
-
-        if ($request->vacancies == 3) {
-            $vacancies = Vacancy::where('organization_id', $organization->id)->get();
-            return $this->success($vacancies, 200);
-        }
-
-        if ($request->workers == 1) {
-            return $this->success($usersAll, 200);
-        }
-
-        if ($request->vacancies == 0) {
-            return $this->success($organization, 200);
-        }
-
+        return $this->error('Admin can not creat organization for yourself or workers');
     }
 
     /**
@@ -134,7 +93,6 @@ class OrganizationController extends Controller
     public function update(UpdateRequest $request, Organization $organization)
     {
         $organization->update($request->validated());
-
         return $this->success($organization, 200);
     }
 
@@ -145,16 +103,8 @@ class OrganizationController extends Controller
      */
     public function destroy(Organization $organization)
     {
-        $vacancies = Vacancy::where('organization_id', $organization->id)->get();
-
-        foreach ($vacancies as $vacancy)
-        {
-            $usersAll = $vacancy->users;
-            $vacancy->users()->detach($usersAll);
-        }
-        $vacancies = Vacancy::where('organization_id', $organization->id)->delete();
         $organization->delete();
-        return $this->success(['message' => 'Organization ' . $organization->title . ' SoftDeleted'], 204);
+        return $this->deleted();
     }
 
 }

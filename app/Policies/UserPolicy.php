@@ -24,7 +24,7 @@ class UserPolicy
      */
     public function viewAny(User $user)
     {
-        return false;
+        return $this->deny('Admin only');
     }
 
     /**
@@ -36,7 +36,7 @@ class UserPolicy
      */
     public function view(User $user, User $model)
     {
-        return $user->id == $model->id;
+        return $user->id === $model->id;
     }
 
     /**
@@ -48,7 +48,7 @@ class UserPolicy
      */
     public function update(User $user, User $model)
     {
-        return $user->id == $model->id;
+        return $user->id === $model->id;
     }
 
     /**
@@ -61,38 +61,6 @@ class UserPolicy
      */
     public function delete(User $user, User $model)
     {
-        if ($user->id == $model->id)
-        {
-            return true;
-        }
-        elseif ($user == null)
-        {
-            return response()->json(['message' => 'This user dose not exist'], 404);
-        }
-
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     *
-     * @param User $user
-     * @param User $model
-     * @return mixed
-     */
-    public function restore(User $user, User $model)
-    {
-        //
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     *
-     * @param User $user
-     * @param User $model
-     * @return mixed
-     */
-    public function forceDelete(User $user, User $model)
-    {
-        //
+        return $user->id === $model->id;
     }
 }

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\User\UpdateRequest;
+use App\Http\Resources\UserResource;
 use App\Models\User;
-use App\Models\Vacancy;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
  * Class UserController
@@ -23,19 +23,21 @@ class UserController extends Controller
     }
 
     /**
-     * @param Request $request
-     * @return JsonResponse
+     * @return AnonymousResourceCollection
      */
-    public function index(Request $request)
+    public function index()
     {
-        if ($request->search) {
-            $user = User::where('country', 'like', '%' . $request->search . '%')
-                ->orWhere('city', 'like', '%' . $request->search . '%')
-                ->orWhere('first_name', 'like', '%' . $request->search . '%')
-                ->orWhere('last_name', 'like', '%' . $request->search . '%')
+        if (request()->search) {
+            $user = User::where('country', 'like', '%' . request()->search . '%')
+                ->orWhere('city', 'like', '%' . request()->search . '%')
+                ->orWhere('first_name', 'like', '%' . request()->search . '%')
+                ->orWhere('last_name', 'like', '%' . request()->search . '%')
+                ->orWhere('country', 'like', '%' . request()->search . '%')
                 ->get();
-            return $this->success($user, 200);
+            return UserResource::collection($user);
         }
+        $user = User::all();
+        return UserResource::collection($user);
     }
 
     /**
@@ -44,7 +46,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return $this->success($user, 200);
+        return  $this->success($user);
     }
 
     /**
@@ -55,8 +57,7 @@ class UserController extends Controller
     public function update(UpdateRequest $request, User $user)
     {
         $user->update($request->validated());
-
-        return $this->success($user, 200);
+        return  $this->success($user);
     }
 
     /**
@@ -66,22 +67,7 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        $organization = $user->organizations()->get()->pluck('id')
-            ->each(function ($organization_id){
-                $vacancies = Vacancy::where('organization_id', $organization_id)->get();
-
-                foreach ($vacancies as $vacancy)
-                {
-                    $usersAll = $vacancy->users;
-                    $vacancy->users()->detach($usersAll);
-                }
-                $vacancies = Vacancy::where('organization_id', $organization_id)->delete();
-        });
-
-        $user->organizations()->delete();
-
         $user->delete();
-
-        return $this->success(['message' => 'User ' . $user->first_name . ' SoftDeleted'], 204);
+        return $this->deleted();
     }
 }

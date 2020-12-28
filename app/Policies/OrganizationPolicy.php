@@ -5,57 +5,74 @@ namespace App\Policies;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Auth\Access\Response;
 
 class OrganizationPolicy
 {
     use HandlesAuthorization;
 
-    public function before(User $user)
-    {
-        if ($user->role === 'admin') {
-            return true;
-        }
-    }
-
     /**
      * Determine whether the user can view any models.
      *
      * @param User $user
-     * @return mixed
+     * @return bool|Response
      */
     public function viewAny(User $user)
     {
-        return $user->role === 'employer';
+        if ($user->role === 'admin' || $user->role === 'employer')
+        {
+            return true;
+        }
+        return $this->deny('Workers can not view organization(s)');
     }
 
     /**
-     * Determine whether the user can view the model.
-     *
      * @param User $user
      * @param Organization $organization
-     * @return mixed
+     * @return bool|Response
      */
     public function view(User $user, Organization $organization)
     {
-        return $user->role == 'employer' && $organization->user_id == $user->id;
+        if ($user->role === 'admin' || ($user->role == 'employer' && $organization->user_id == $user->id))
+        {
+            return true;
+        }
+        elseif ($user->role === 'worker')
+        {
+            return $this->deny('Workers can not view organization(s)');
+        }
+        elseif ($organization->user_id !== $user->id)
+        {
+            return $this->deny('Organization dose not belong to you');
+        }
     }
 
     /**
-     * Determine whether the user can create models.
-     *
      * @param User $user
-     * @return mixed
+     * @return bool|Response
      */
     public function create(User $user)
     {
-        /** @var  $user */
-        return $user->role == 'employer';
+        if ($user->role === 'employer')
+        {
+            return true;
+        }
+        return $this->deny('Admin or workers can not create organization(s)');
     }
 
-    public function storeForMe()
+    /**
+     * @param User $user
+     * @return bool|Response
+     */
+    public function storeForEmployers(User $user)
     {
-        return false;
+        if ($user->role === 'admin')
+        {
+            return true;
+        }
+        return $this->deny('Admins only');
     }
+
     /**
      * Determine whether the user can update the model.
      *
@@ -65,7 +82,18 @@ class OrganizationPolicy
      */
     public function update(User $user, Organization $organization)
     {
-        return $user->role === 'employer' && $organization->user_id === $user->id;
+        if ($user->role === 'admin' || ($user->role === 'employer' && $organization->user_id === $user->id))
+        {
+            return true;
+        }
+        elseif ($user->role === 'employer' && $organization->user_id !== $user->id)
+        {
+            return $this->deny('This organization not yours');
+        }
+        elseif ($user->role === 'worker')
+        {
+            return $this->deny('Worker can not update any organizations');
+        }
     }
 
     /**
@@ -78,31 +106,20 @@ class OrganizationPolicy
     public function delete(User $user, Organization $organization)
     {
         /** @var  $user */
-        return $user->role === 'employer' && ($organization->user_id === $user->id);
+        if ($user->role === 'admin' || ($user->role === 'employer' && ($organization->user_id === $user->id)))
+        {
+            return true;
+        }
+        elseif ($user->role === 'employer' && $organization->user_id !== $user->id)
+        {
+            return $this->deny('This organization not yours');
+        }
+        elseif ($user->role === 'worker')
+        {
+            return $this->deny('Worker can not delete any organizations');
+        }
+        return $this->deny('Action denied');
 
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     *
-     * @param User $user
-     * @param Organization $organization
-     * @return mixed
-     */
-    public function restore(User $user, Organization $organization)
-    {
-//        return true;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     *
-     * @param \App\Models\User $user
-     * @param \App\Models\Organization $organization
-     * @return mixed
-     */
-    public function forceDelete(User $user, Organization $organization)
-    {
-//        return true;
-    }
 }

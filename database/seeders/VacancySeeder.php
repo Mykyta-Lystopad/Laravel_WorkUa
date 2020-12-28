@@ -16,12 +16,6 @@ class VacancySeeder extends Seeder
      */
     public function run()
     {
-//        Vacancy::factory(10)->create()
-//            ->each(function (Vacancy $vacancy){
-//                $organizations = Organization::inRandomOrder()->get()->take(4);
-//                $vacancy->organizations()->attach($organizations);
-//            });
-
         Organization::all()->each(function (Organization $organization) {
             $vacancy = Vacancy::factory(4)->make();
             $organization->vacancies()->saveMany($vacancy);
@@ -29,11 +23,10 @@ class VacancySeeder extends Seeder
         });
 
         Vacancy::all()->each(function (Vacancy $vacancy) {
-            $users = User::all()->random(5)->except([2,3,4,5,6]);
+            $users = User::where('role', 'worker')
+                ->get()->random(5)->except([13,16,18,24,35, 39]);
 
             $vacancy->users()->attach($users);
         });
-
-
     }
 }
