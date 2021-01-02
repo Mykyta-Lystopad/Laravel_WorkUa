@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\User\UpdateRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -14,12 +15,16 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
  */
 class UserController extends Controller
 {
+    private $userService;
+
     /**
      * UserController constructor.
+     * @param UserService $userService
      */
-    public function __construct()
+    public function __construct(UserService $userService)
     {
         $this->authorizeResource(User::class);
+        $this->userService = $userService;
     }
 
     /**
@@ -28,12 +33,7 @@ class UserController extends Controller
     public function index()
     {
         if (request()->search) {
-            $user = User::where('country', 'like', '%' . request()->search . '%')
-                ->orWhere('city', 'like', '%' . request()->search . '%')
-                ->orWhere('first_name', 'like', '%' . request()->search . '%')
-                ->orWhere('last_name', 'like', '%' . request()->search . '%')
-                ->orWhere('country', 'like', '%' . request()->search . '%')
-                ->get();
+           $user = $this->userService->searchDef(request());
             return UserResource::collection($user);
         }
         $user = User::all();

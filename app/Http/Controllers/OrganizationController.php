@@ -7,15 +7,24 @@ use App\Http\Requests\Organizations\UpdateRequest;
 use App\Http\Resources\OrganizationResource;
 use App\Models\Organization;
 use App\Models\User;
+use App\Services\OrganizationService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class OrganizationController extends Controller
 {
-    public function __construct()
+    private $organizationService;
+    /**
+     * OrganizationController constructor.
+     * @param OrganizationService $organizationService
+     */
+    public function __construct(
+        OrganizationService $organizationService
+    )
     {
         $this->authorizeResource(Organization::class);
+        $this->organizationService = $organizationService;
     }
 
     /**
@@ -37,22 +46,8 @@ class OrganizationController extends Controller
      */
     public function show(Organization $organization)
     {
-            if (request()->workers === '1'){
-                $workers = $organization->vacancies()->with('users')->get()->pluck('users')->flatten();
-                return $this->success($workers);
-            } elseif (request()->vacancies === '1') {
-                $vacancyActive = $organization->vacancies->where('status', 'active');
-                return $this->success($vacancyActive);
-            } elseif (request()->vacancies === '2') {
-                $vacancyClosed = $organization->vacancies->where('status', 'closed');
-                return $this->success($vacancyClosed);
-            }
-            elseif (request()->vacancies === '3') {
-                $vacanciesAll = $organization->vacancies;
-                return $this->success($vacanciesAll);
-            } else{
-                return $this->success($organization);
-            }
+           $response = $this->organizationService->defForShow(request(), $organization);
+           return $this->success($response);
     }
 
     /**
