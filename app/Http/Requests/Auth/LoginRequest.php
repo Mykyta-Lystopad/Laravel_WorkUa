@@ -17,7 +17,9 @@ class LoginRequest extends FormRequest
     {
         return [
             'email'=>'email|required',
-            'password'=>['string', 'required']
+            'password'=>['string', 'required'],
+            'verify_status' => 'string',
+            'email_verified_at' => 'any'
         ];
     }
 }

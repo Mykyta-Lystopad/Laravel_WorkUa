@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,7 +16,8 @@ use Laravel\Sanctum\HasApiTokens;
  * Class User
  * @package App\Models
  */
-class User extends Authenticatable
+
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
@@ -50,6 +52,7 @@ class User extends Authenticatable
         'first_name',
         'last_name',
         'email',
+        'verify_status',
         'password',
         'country',
         'city',
@@ -58,7 +61,8 @@ class User extends Authenticatable
     ];
 
     protected $attributes = [
-        'role'=>'worker'
+        'role'=>'worker',
+        'verify_status'=>'waiting'
     ];
 
     /**
