@@ -23,6 +23,7 @@ class CreateUserVacancyTable extends Migration
             $table->foreign('vacancy_id')->references('id')->on('vacancies');
             $table->timestamps();
         });
+
     }
 
     /**

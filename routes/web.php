@@ -12,4 +12,9 @@
 |
 */
 
-Route::get('welcome')->name('welcome');
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+
+Route::get('welcome', function (){
+    return 'welcome';
+})->name('welcome');
+

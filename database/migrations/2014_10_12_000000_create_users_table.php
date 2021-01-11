@@ -1,5 +1,6 @@
 <?php
 
+use Database\Seeders\UserSeeder;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -19,13 +20,12 @@ class CreateUsersTable extends Migration
             $table->string('last_name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('verify_status');
+            $table->string('verify_code');
             $table->string('password');
             $table->string('country');
             $table->string('city');
             $table->string('telephone');
             $table->string('role')->default('worker');
-            $table->rememberToken();
             $table->timestamps();
             $table->SoftDeletes();
         });

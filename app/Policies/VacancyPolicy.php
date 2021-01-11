@@ -29,12 +29,10 @@ class VacancyPolicy
     public function view(User $user, Vacancy $vacancy)
     {
         $organization = Organization::find($vacancy->organization_id);
-        if ($user->role === 'employer' && $organization->user_id === $user->id
-            || $user->role === 'admin'
-            || $user->role === 'worker') {
-            return true;
+        if ($user->role === 'employer' && $organization->user_id !== $user->id) {
+            return $this->deny('This vacancy not yours');
         }
-        return $this->deny('This vacancy not yours');
+        return true;
     }
 
     /**
@@ -47,13 +45,9 @@ class VacancyPolicy
         $organization = Organization::find(request()->organization_id);
         if ($user->role === 'employer' && $organization->user_id === $user->id) {
             return true;
-        }
-        elseif ($user->role !== 'employer')
-        {
+        } elseif ($user->role !== 'employer') {
             return $this->deny('Employers only');
-        }
-        elseif ($organization->user_id !== $user->id)
-        {
+        } elseif ($organization->user_id !== $user->id) {
             return $this->deny('This organization not yours');
         }
 
@@ -64,12 +58,12 @@ class VacancyPolicy
      */
     public function book(User $user)
     {
-        if ($user->role === 'employer')
-        {
-            return $this->deny('Employers can not booking');
+        $userBooking = User::find(request()->user_id);
+        if ($user->role === 'employer' || $userBooking->role != 'worker' ) {
+            return $this->deny('Employers can not booking or you do not worker');
         }
 
-        if (($user->id === request()->user_id) || $user->role === 'admin'){
+        if (($user->id === request()->user_id) || $user->role === 'admin') {
             return true;
         }
     }
@@ -80,25 +74,30 @@ class VacancyPolicy
      */
     public function unbooked(User $user)
     {
-        if ($user->role === 'admin'){
+        if ($user->role === 'admin') {
             return true;
         }
-        if ($user->id === request()->user_id){
+        if ($user->id === request()->user_id) {
             return true;
         }
-        if ($user->role === 'worker' && $user->id !== request()->user_id){
+        if ($user->role === 'worker' && $user->id !== request()->user_id) {
             return $this->deny('You did not unbook on this vacancy');
         }
         // owner or not
-        $vacanciesId = $user->organizations()->with('vacancies')
-            ->get()->pluck('vacancies')->flatten()->pluck('id');
-        foreach ($vacanciesId as $id) {
-            if (request()->vacancy_id === $id) {
-                return true;
-            }
+        // 1 method
+        return Vacancy::find(request()->vacancy_id)->organization->user->id == $user->id;
 
-        }
-        return $this->deny('This vacancy not yours');
+        // 2 method
+//        return $user->createdVacancies()->get()->contains(request()->vacancy_id);
+
+        // 3 method
+//        $vacanciesId = $user->organizations()->with('vacancies')
+//            ->get()->pluck('vacancies')->flatten()->pluck('id');
+//        foreach ($vacanciesId as $id) {
+//            if (request()->vacancy_id === $id) {
+//                return true;
+//            }
+//        }
     }
 
     /**
@@ -125,7 +124,7 @@ class VacancyPolicy
         /** @var  $user */
 
         $organization = Organization::find($vacancy->organization_id);
-        if ( ($user->role === 'employer'  && $organization->user_id === $user->id) || $user->role === 'admin'){
+        if (($user->role === 'employer' && $organization->user_id === $user->id) || $user->role === 'admin') {
             return true;
         }
         return $this->deny('This vacancy not yours');

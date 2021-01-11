@@ -5,14 +5,15 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\StatsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VacancyController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Route;
 
 // for authentication
-//Route::group(['prefix' => ''], function (){
 Route::post('register', [AuthController::class, 'register'])->name('register');
-Route::get('login', [AuthController::class, 'login'])->name('login');
+Route::post('resend/{email}', [AuthController::class, 'resendVerificationEmail'])->name('resend');
+Route::post('resendPassword/{email}', [AuthController::class, 'resendPassword'])->name('resendPassword');
+Route::post('login', [AuthController::class, 'login'])->name('login');
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-//});
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
 
@@ -21,7 +22,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 // for organizations
     Route::apiResource('organization', OrganizationController::class);
-    Route::post('createOrganizationForEmployer/{user}', [OrganizationController::class, 'storeForEmployers']);
+    Route::post('createOrganizationForEmployer', [OrganizationController::class, 'storeForEmployers']);
 
 // for vacancies
     Route::apiResource('vacancy', VacancyController::class);

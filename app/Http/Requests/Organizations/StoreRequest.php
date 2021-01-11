@@ -17,6 +17,7 @@ class StoreRequest extends FormRequest
     public function rules()
     {
         return [
+            "user_id"=>'numeric',
             "title"=>'required|string|min:3|max:100',
             "country"=>['required','string','min:3','max:50'],
             "city"=>['required','string','min:3','max:50'],

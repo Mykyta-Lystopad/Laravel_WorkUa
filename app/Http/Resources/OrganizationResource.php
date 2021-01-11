@@ -3,6 +3,8 @@
 namespace App\Http\Resources;
 
 use App\Models\Organization;
+use App\Models\User;
+use App\Models\Vacancy;
 use Illuminate\Http\Client\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 /**
@@ -26,6 +28,9 @@ class OrganizationResource extends JsonResource
             'city'=> $this->city,
             'created_at'=> $this->created_at,
             'updated_at'=> $this->updated_at,
+//            'workers'=>UserResource::collection(User::paginate()),
+//            'vacancyAddition'=>VacancyResource::where('status', '=','active')
+//                        ->collection($this->whenLoaded('vacancies')),
         ];
     }
 }

@@ -7,8 +7,13 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Mail\VerifyEmail;
 use App\Models\User;
+use App\Notifications\EmailVerification;
+use App\Services\UserService;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -17,6 +22,13 @@ use Illuminate\Validation\ValidationException;
  */
 class AuthController extends Controller
 {
+    private $userServise;
+
+    public function __construct(UserService $userService)
+    {
+        $this->userServise = $userService;
+    }
+
     /**
      * @param RegisterRequest $request
      * @return JsonResponse
@@ -24,9 +36,13 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): JsonResponse
     {
         /**@var User $user */
-        $user = User::create($request->validated());
+        $user = User::create($request->validated() +
+            ['verify_code' => mt_rand(100000, 999999)]
+        );
 
-        Mail::to($user->email)->send(new VerifyEmail($user));
+//        Mail::to($user->email)->send(new VerifyEmail($user));
+
+        $user->notify(new EmailVerification($user));
 
         return response()->json(['success' => 'Check your email and click on verify link']);
 //        $data = UserResource::make($user)->toArray($request) +
@@ -34,6 +50,45 @@ class AuthController extends Controller
 //        return $this->created($data);
     }
 
+    public function resendVerificationEmail($email)
+    {
+        $user_id = User::whereEmail($email)->get()->pluck('id')->get(0);
+        if (!$user_id){
+            return $this->error(['message' => 'Email does not exist']);
+        }
+        $user = User::find($user_id);
+        if ($user->email_verified_at != null){
+            return response()->json(['success' => 'Your email already verified']);
+        }
+        $user->update([
+            $user->verify_code = mt_rand(100000, 999999)
+        ]);
+
+        $user->notify(new EmailVerification($user));
+        return $this->success('Check your email');
+    }
+
+    public function resendPassword($email)
+    {
+        $user_id = User::whereEmail($email)->get()->pluck('id')->get(0);
+        if (!$user_id){
+            return $this->error(['message' => 'Email does not exist']);
+        }
+        $user = User::find($user_id);
+        $password = (mt_rand(10, 99)) . (Str::random(8)) . (mt_rand(10, 99));
+        $user->update([
+            $user->verify_code = $password,
+            $user->password = $password
+        ]);
+
+        $user->notify(new EmailVerification($user));
+
+        $user->update([
+            $user->verify_code = 'done',
+            $user->email_verified_at = now()
+        ]);
+        return $this->success( 'Check your email with new password');
+    }
     /**
      * @param LoginRequest $request
      * @return JsonResponse
@@ -42,41 +97,14 @@ class AuthController extends Controller
     {
         /**@var User $user */
         if (!auth()->once($request->validated())) {
-            throw ValidationException::withMessages([ // false - 'Wrong email or password'
+            throw ValidationException::withMessages([
                 'email' => 'Wrong email or password'
             ]);
         }
 
-        $user = auth()->user();
+        $user = $this->userServise->userEmailVerify();
 
-        if ($user->verify_status == 'waiting') {
-            $this->updateOnce();
-        }
-        $data = UserResource::make($user)->toArray($request) +
-            ['access_token' => $user->createToken('api')->plainTextToken];
-
-        $this->update($user, $data);
-        return $this->success($data);
-    }
-
-    public function update($user, $data)
-    {
-        foreach ($data as $value) {
-            $arr[] = $value;
-        }
-        $user->update([
-            $user->remember_token = $arr[12]
-        ]);
-
-    }
-
-    private function updateOnce()
-    {
-        $user = auth()->user();
-        $user->update([
-            $user->verify_status = 'active',
-            $user->email_verified_at = now(),
-        ]);
+        return $this->success($user);
     }
 
     /**

@@ -3,8 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\User;
+use Brick\Math\BigInteger;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\In;
+use phpDocumentor\Reflection\Types\Integer;
 
 class UserFactory extends Factory
 {
@@ -27,13 +30,12 @@ class UserFactory extends Factory
             'last_name' => $this->faker->lastName,
             'email' => $this->faker->unique()->safeEmail,
             'email_verified_at' => now(),
-            'verify_status' => 'active',
+            'verify_code' => 'done',
             'password' => 123456,
             'country' => 'Україна',
             'city' => $this->faker->city,
             'telephone' => $this->faker->phoneNumber,
-            'role' => 'worker',
-            'remember_token' => Str::random(10),
+            'role' => 'worker'
         ];
     }
 }

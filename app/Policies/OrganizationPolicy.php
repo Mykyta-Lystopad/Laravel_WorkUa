@@ -66,6 +66,12 @@ class OrganizationPolicy
      */
     public function storeForEmployers(User $user)
     {
+        $userOwner = User::find(request()->user_id);
+//        dd($userOwner);
+        if ($userOwner->role !== 'employer')
+        {
+            return $this->deny('Admin can not create organization for yourself or workers');
+        }
         if ($user->role === 'admin')
         {
             return true;

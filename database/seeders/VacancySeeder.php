@@ -24,7 +24,9 @@ class VacancySeeder extends Seeder
 
         Vacancy::all()->each(function (Vacancy $vacancy) {
             $users = User::where('role', 'worker')
-                ->get()->random(5)->except([13,16,18,24,35, 39]);
+                ->inRandomOrder()
+                ->take(rand(3,5))
+                ->get();
 
             $vacancy->users()->attach($users);
         });

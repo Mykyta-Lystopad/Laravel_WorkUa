@@ -28,16 +28,13 @@ class UserController extends Controller
     }
 
     /**
-     * @return AnonymousResourceCollection
+     * @return JsonResponse
      */
     public function index()
     {
-        if (request()->search) {
-           $user = $this->userService->searchDef(request());
-            return UserResource::collection($user);
-        }
-        $user = User::all();
-        return UserResource::collection($user);
+        $users = $this->userService->searchUsers();
+
+        return $this->success(UserResource::collection($users));
     }
 
     /**
@@ -46,7 +43,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return  $this->success($user);
+        return $this->success(new UserResource($user));
     }
 
     /**
@@ -57,7 +54,7 @@ class UserController extends Controller
     public function update(UpdateRequest $request, User $user)
     {
         $user->update($request->validated());
-        return  $this->success($user);
+        return $this->success(new UserResource($user));
     }
 
     /**

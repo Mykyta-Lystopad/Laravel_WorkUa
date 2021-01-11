@@ -15,6 +15,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 class OrganizationController extends Controller
 {
     private $organizationService;
+
     /**
      * OrganizationController constructor.
      * @param OrganizationService $organizationService
@@ -28,16 +29,12 @@ class OrganizationController extends Controller
     }
 
     /**
-     * @return AnonymousResourceCollection
+     * @return JsonResponse
      */
     public function index()
     {
-        $user = auth()->user();
-        if ($user->role === 'admin')
-        {
-            return OrganizationResource::collection(Organization::all());
-        }
-            return OrganizationResource::collection(Organization::where('user_id', $user->id)->get());
+        $organization = $this->organizationService->forIndex();
+        return $this->success(OrganizationResource::collection($organization));
     }
 
     /**
@@ -46,8 +43,8 @@ class OrganizationController extends Controller
      */
     public function show(Organization $organization)
     {
-           $response = $this->organizationService->defForShow(request(), $organization);
-           return $this->success($response);
+        $organizationDetails = $this->organizationService->defForShow($organization);
+        return $this->success($organizationDetails);
     }
 
     /**
@@ -59,7 +56,7 @@ class OrganizationController extends Controller
         /** @var User $user */
         $user = auth()->user();
         $organization = $user->organizations()->create($request->validated());
-        return $this->created($organization);
+        return $this->created(new OrganizationResource($organization));
     }
 
     /**
@@ -68,16 +65,12 @@ class OrganizationController extends Controller
      * @return JsonResponse
      * @throws AuthorizationException
      */
-    public function storeForEmployers(StoreRequest $request, User $user)
+    public function storeForEmployers(StoreRequest $request)
     {
-        $this->authorize('storeForEmployers', Organization::class);
+        $this->authorize(Organization::class);
 
-        if ($user->role === 'employer') {
-            $organization = $user->organizations()->create($request->validated());
-
-            return $this->created($organization);
-        }
-        return $this->error('Admin can not creat organization for yourself or workers');
+        $organization = $this->organizationService->forStoreForEmployers($request);
+        return $this->created(new OrganizationResource($organization));
     }
 
     /**
@@ -88,7 +81,7 @@ class OrganizationController extends Controller
     public function update(UpdateRequest $request, Organization $organization)
     {
         $organization->update($request->validated());
-        return $this->success($organization, 200);
+        return $this->success(new OrganizationResource($organization));
     }
 
     /**

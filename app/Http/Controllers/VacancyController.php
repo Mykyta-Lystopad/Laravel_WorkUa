@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Vacancies\StoreRequest;
 use App\Http\Requests\Vacancies\UpdateRequest;
+use App\Http\Resources\VacancyResource;
 use App\Models\Organization;
 use App\Models\User;
 use App\Models\Vacancy;
@@ -37,16 +38,8 @@ class VacancyController extends Controller
      */
     public function index()
     {
-        $user = auth()->user();
-        if ($user->role === 'admin') {
-            if ((request()->only_active === 'false') || (request()->only_active === null)) {
-                $vacancy = Vacancy::all();
-                return response()->json($vacancy);
-            }
-        }
-
-        $vacanciesActive = Vacancy::all()->where('status', 'active');
-        return response()->json($vacanciesActive);
+        $vacancies = $this->vacancyService->forIndex();
+        return $this->success(VacancyResource::collection($vacancies));
     }
 
     /**
@@ -55,12 +48,8 @@ class VacancyController extends Controller
      */
     public function show(Vacancy $vacancy)
     {
-        $user = auth()->user();
-        if ($user->role === 'worker') {
-            return response()->json($vacancy);
-        }
-        $workers = $vacancy->load('users');
-        return $this->success($workers);
+       $vacancyOrWorkers = $this->vacancyService->forShow($vacancy);
+        return $this->success(new VacancyResource($vacancyOrWorkers));
     }
 
     /**
@@ -71,7 +60,7 @@ class VacancyController extends Controller
     {
         $vacancy = Vacancy::make($request->validated());
         $vacancy = Organization::find($request->organization_id)->vacancies()->save($vacancy);
-        return $this->success($vacancy);
+        return $this->success(new VacancyResource($vacancy));
     }
 
     /**
@@ -81,7 +70,7 @@ class VacancyController extends Controller
      */
     public function book(Request $request)
     {
-        $this->authorize('book', Vacancy::class);
+        $this->authorize( Vacancy::class);
 
         $book = $this->vacancyService->bookAndUnbookWorkers($request->user_id, $request->vacancy_id, 1);
         return $this->success($book);
@@ -94,7 +83,7 @@ class VacancyController extends Controller
      */
     public function unbooked(Request $request)
     {
-        $this->authorize('unbooked', Vacancy::class);
+        $this->authorize(Vacancy::class);
 
         $unbook = $this->vacancyService->bookAndUnbookWorkers($request->user_id, $request->vacancy_id);
         return $this->success($unbook);
@@ -105,12 +94,12 @@ class VacancyController extends Controller
      *
      * @param UpdateRequest $request
      * @param Vacancy $vacancy
-     * @return Response
+     * @return JsonResponse
      */
     public function update(UpdateRequest $request, Vacancy $vacancy)
     {
         $vacancy->update($request->validated());
-        return response()->json($vacancy);
+        return $this->success(new VacancyResource($vacancy));
     }
 
     /**
@@ -121,6 +110,6 @@ class VacancyController extends Controller
     public function destroy(Vacancy $vacancy)
     {
         $vacancy->delete();
-
+        return $this->deleted();
     }
 }
